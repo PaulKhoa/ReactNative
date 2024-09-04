@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { auth, signInWithEmailAndPassword } from './firebase';
+import { auth, signInWithEmailAndPassword } from '../firebase';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -12,7 +12,7 @@ const LoginScreen = ({ navigation }) => {
         navigation.navigate('Home');
       })
       .catch(error => {
-        Alert.alert('Đăng nhập thất bại', error.message);
+        Alert.alert('Email hoặc mật khẩu không đúng!', error.message);
       });
   };
 

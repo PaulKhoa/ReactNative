@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { auth, createUserWithEmailAndPassword } from './firebase';
+import { auth, createUserWithEmailAndPassword } from '../firebase';
 
 const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -10,7 +10,7 @@ const RegisterScreen = ({ navigation }) => {
     createUserWithEmailAndPassword(auth, email, password)
       .then(() => {
         Alert.alert('Đăng ký thành công!');
-        navigation.navigate('Login');
+        navigation.navigate('Home');
       })
       .catch(error => {
         Alert.alert('Đăng ký thất bại', error.message);

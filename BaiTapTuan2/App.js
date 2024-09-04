@@ -1,62 +1,40 @@
-import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { auth } from './firebase';
-import RegisterScreen from './RegisterScreen';
-import LoginScreen from './LoginScreen';
-import ForgetPasswordScreen from './ForgetPasswordScreen';
-import HomeScreen from './HomeScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import RegisterScreen from './screen/RegisterScreen';
+import LoginScreen from './screen/LoginScreen';
+import HomeScreen from './screen/HomeScreen';
+import ForgetPasswordScreen from './screen/ForgetPasswordScreen';
 
 const Stack = createStackNavigator();
 
-const AuthStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen 
-      name="Login" 
-      component={LoginScreen} 
-      options={{ headerShown: false }} 
-    />
-    <Stack.Screen 
-      name="Register" 
-      component={RegisterScreen} 
-      options={{ headerShown: false }} 
-    />
-    <Stack.Screen 
-      name="ForgetPassword" 
-      component={ForgetPasswordScreen} 
-      options={{ headerShown: false }} 
-    />
-  </Stack.Navigator>
-);
-
-const AppStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen 
-      name="Home" 
-      component={HomeScreen} 
-      options={{ headerShown: false }} 
-    />
-  </Stack.Navigator>
-);
-
-export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(null);
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      setIsLoggedIn(user ? true : false);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  if (isLoggedIn === null) {
-    return null;
-  }
-
+const App = () => {
   return (
     <NavigationContainer>
-      {isLoggedIn ? <AppStack /> : <AuthStack />}
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
+          options={{ title: 'Đăng Ký' }}
+        />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ title: 'Đăng Nhập' }}
+        />
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ title: 'Trang Chủ' }}  // Thiết lập tiêu đề "Trang Chủ" ở đây
+        />
+        <Stack.Screen
+          name="ForgetPassword"
+          component={ForgetPasswordScreen}
+          options={{ title: 'Quên Mật Khẩu' }}
+        />
+      </Stack.Navigator>
     </NavigationContainer>
   );
-}
+};
+
+export default App;
