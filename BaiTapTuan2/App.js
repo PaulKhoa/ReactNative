@@ -51,7 +51,6 @@ export default function App() {
   }, []);
 
   if (isLoggedIn === null) {
-    // Show a loading screen or nothing while checking auth state
     return null;
   }
 
