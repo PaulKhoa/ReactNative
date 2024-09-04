@@ -25,7 +25,7 @@ const App = () => {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: 'Trang Chủ' }}  // Thiết lập tiêu đề "Trang Chủ" ở đây
+          options={{ title: 'Trang Chủ' }} 
         />
         <Stack.Screen
           name="ForgetPassword"
