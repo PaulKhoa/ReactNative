@@ -52,8 +52,13 @@ const getUserData = async (userId) => {
     if (snapshot.exists()) {
       return snapshot.val();
     } else {
-      console.log('Không có dữ liệu người dùng');
-      return null;
+      // Trả về đối tượng người dùng mặc định nếu không có dữ liệu
+      return {
+        dob: '',
+        phone: '',
+        address: '',
+        avatar: null
+      };
     }
   } catch (error) {
     console.error('Lỗi lấy thông tin người dùng:', error);

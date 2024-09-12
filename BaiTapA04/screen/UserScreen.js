@@ -59,7 +59,6 @@ const UserScreen = ({ navigation }) => {
   };
 
   const handleUpdateInfo = () => {
-    // Check if there are changes
     const userId = auth.currentUser?.uid;
     if (!userId) return;
 
@@ -83,7 +82,7 @@ const UserScreen = ({ navigation }) => {
             {
               text: 'Xác nhận',
               onPress: () => {
-                handleSendOtp(); // Gửi mã OTP khi nhấn xác nhận
+                handleSendOtp();
                 setEditModalVisible(true);
               },
             },
@@ -107,7 +106,6 @@ const UserScreen = ({ navigation }) => {
       Alert.alert('Thông báo', 'Cập nhật thông tin thành công!');
       setEditModalVisible(false);
 
-      // Tải lại thông tin người dùng sau khi cập nhật
       const userData = await getUserData(userId);
       setDob(userData.dob || '');
       setPhone(userData.phone || '');
@@ -131,25 +129,41 @@ const UserScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.label}>Email: {email}</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Ngày sinh (dd/mm/yyyy)"
-        value={dob}
-        onChangeText={setDob}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Số điện thoại"
-        value={phone}
-        onChangeText={setPhone}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Địa chỉ"
-        value={address}
-        onChangeText={setAddress}
-      />
+      <View style={styles.fieldContainer}>
+        <Text style={styles.label}>Email</Text>
+        <Text style={styles.value}>{email}</Text>
+      </View>
+
+      <View style={styles.fieldContainer}>
+        <Text style={styles.label}>Ngày sinh</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ngày sinh (dd/mm/yyyy)"
+          value={dob}
+          onChangeText={setDob}
+        />
+      </View>
+
+      <View style={styles.fieldContainer}>
+        <Text style={styles.label}>Số điện thoại</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Số điện thoại"
+          value={phone}
+          onChangeText={setPhone}
+        />
+      </View>
+
+      <View style={styles.fieldContainer}>
+        <Text style={styles.label}>Địa chỉ</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Địa chỉ"
+          value={address}
+          onChangeText={setAddress}
+        />
+      </View>
+
       <TouchableOpacity style={styles.button} onPress={handleUpdateInfo}>
         <Text style={styles.buttonText}>Cập nhật thông tin</Text>
       </TouchableOpacity>
@@ -162,7 +176,7 @@ const UserScreen = ({ navigation }) => {
             placeholder="Nhập mã OTP"
             value={otp}
             onChangeText={setOtp}
-            keyboardType='numeric' // Thay đổi kiểu bàn phím thành numpad
+            keyboardType='numeric'
           />
           <TouchableOpacity style={styles.button} onPress={handleConfirmUpdate}>
             <Text style={styles.buttonText}>Xác nhận OTP</Text>
@@ -189,42 +203,51 @@ const styles = StyleSheet.create({
   avatar: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: 50, // Hình tròn
     backgroundColor: '#ddd',
   },
   changeAvatarButton: {
     marginTop: 10,
-    backgroundColor: '#007BFF',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 12, // Bo góc mềm mại
+    backgroundColor: '#007bff',
   },
   changeAvatarText: {
     color: '#fff',
     fontWeight: 'bold',
   },
+  fieldContainer: {
+    marginBottom: 20,
+  },
   label: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginVertical: 10,
+    marginBottom: 5,
+  },
+  value: {
+    fontSize: 16,
+    color: '#333',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
-    padding: 15,
-    marginVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12, // Bo góc mềm mại
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    fontSize: 16,
     backgroundColor: '#fff',
   },
   button: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#007bff',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 12, // Bo góc mềm mại
     alignItems: 'center',
     marginVertical: 10,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   modalContainer: {
     flex: 1,
@@ -233,15 +256,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'center',
     marginBottom: 20,
   },
   cancelButton: {
-    textAlign: 'center',
+    color: '#007bff',
     marginTop: 20,
-    color: '#ff5c5c',
+    textAlign: 'center',
   },
 });
 
