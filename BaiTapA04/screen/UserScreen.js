@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Modal, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { auth, updateUserData, getUserData } from '../firebase';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { auth, signOut, updateUserData, getUserData } from '../firebase';
 import { sendOTPEmail, generateOTP } from '../otpService';
-import { FontAwesome } from '@expo/vector-icons';
 
 const UserScreen = ({ navigation }) => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState(auth.currentUser?.email || '');
   const [dob, setDob] = useState('');
   const [phone, setPhone] = useState('');
@@ -14,6 +15,7 @@ const UserScreen = ({ navigation }) => {
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [otp, setOtp] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState('');
+  const [oldData, setOldData] = useState({});
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -22,6 +24,14 @@ const UserScreen = ({ navigation }) => {
         if (!userId) throw new Error('Người dùng chưa đăng nhập');
 
         const userData = await getUserData(userId);
+        setOldData({
+          name: userData.name || '',
+          dob: userData.dob || '',
+          phone: userData.phone || '',
+          address: userData.address || '',
+          avatar: userData.avatar || null,
+        });
+        setName(userData.name || '');
         setDob(userData.dob || '');
         setPhone(userData.phone || '');
         setAddress(userData.address || '');
@@ -64,6 +74,7 @@ const UserScreen = ({ navigation }) => {
 
     getUserData(userId).then(userData => {
       const changes = {
+        name: name !== userData.name,
         dob: dob !== userData.dob,
         phone: phone !== userData.phone,
         address: address !== userData.address,
@@ -78,6 +89,15 @@ const UserScreen = ({ navigation }) => {
             {
               text: 'Hủy',
               style: 'cancel',
+              onPress: () => {
+                // Khôi phục dữ liệu cũ khi hủy bỏ
+                setName(oldData.name);
+                setDob(oldData.dob);
+                setPhone(oldData.phone);
+                setAddress(oldData.address);
+                setAvatar(oldData.avatar);
+                setEditModalVisible(false);
+              },
             },
             {
               text: 'Xác nhận',
@@ -102,11 +122,19 @@ const UserScreen = ({ navigation }) => {
     try {
       if (!userId) throw new Error('Người dùng chưa đăng nhập');
 
-      await updateUserData(userId, { dob, phone, address, avatar });
+      await updateUserData(userId, { name, dob, phone, address, avatar });
       Alert.alert('Thông báo', 'Cập nhật thông tin thành công!');
       setEditModalVisible(false);
 
       const userData = await getUserData(userId);
+      setOldData({
+        name: userData.name || '',
+        dob: userData.dob || '',
+        phone: userData.phone || '',
+        address: userData.address || '',
+        avatar: userData.avatar || null,
+      });
+      setName(userData.name || '');
       setDob(userData.dob || '');
       setPhone(userData.phone || '');
       setAddress(userData.address || '');
@@ -116,69 +144,114 @@ const UserScreen = ({ navigation }) => {
     }
   };
 
+  const handleSignOut = () => {
+    signOut(auth)
+      .then(() => {
+        Alert.alert('Thông báo', 'Đã đăng xuất.');
+        navigation.navigate('Login');
+      })
+      .catch(error => {
+        Alert.alert('Lỗi', 'Không thể đăng xuất.');
+      });
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.avatarContainer}>
         {avatar ? (
           <Image source={{ uri: avatar }} style={styles.avatar} />
         ) : (
-          <FontAwesome name="user" size={100} color="gray" />
+          <Icon name="account-circle" size={100} color="#ddd" />
         )}
         <TouchableOpacity style={styles.changeAvatarButton} onPress={handlePickImage}>
+          <Icon name="camera-alt" size={24} color="#007bff" />
           <Text style={styles.changeAvatarText}>Thay đổi ảnh đại diện</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.fieldContainer}>
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{email}</Text>
+        <View style={styles.fieldWrapper}>
+          <Icon name="person" size={20} color="#007bff" />
+          <TextInput
+            style={styles.input}
+            placeholder="Tên người dùng"
+            value={name}
+            onChangeText={setName}
+          />
+        </View>
       </View>
 
       <View style={styles.fieldContainer}>
-        <Text style={styles.label}>Ngày sinh</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ngày sinh (dd/mm/yyyy)"
-          value={dob}
-          onChangeText={setDob}
-        />
+        <View style={styles.fieldWrapper}>
+          <Icon name="email" size={20} color="#007bff" />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            editable={false}
+          />
+        </View>
       </View>
 
       <View style={styles.fieldContainer}>
-        <Text style={styles.label}>Số điện thoại</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Số điện thoại"
-          value={phone}
-          onChangeText={setPhone}
-        />
+        <View style={styles.fieldWrapper}>
+          <Icon name="calendar-today" size={20} color="#007bff" />
+          <TextInput
+            style={styles.input}
+            placeholder="Ngày sinh (dd/mm/yyyy)"
+            value={dob}
+            onChangeText={setDob}
+          />
+        </View>
       </View>
 
       <View style={styles.fieldContainer}>
-        <Text style={styles.label}>Địa chỉ</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Địa chỉ"
-          value={address}
-          onChangeText={setAddress}
-        />
+        <View style={styles.fieldWrapper}>
+          <Icon name="phone" size={20} color="#007bff" />
+          <TextInput
+            style={styles.input}
+            placeholder="Số điện thoại"
+            value={phone}
+            onChangeText={setPhone}
+          />
+        </View>
+      </View>
+
+      <View style={styles.fieldContainer}>
+        <View style={styles.fieldWrapper}>
+          <Icon name="home" size={20} color="#007bff" />
+          <TextInput
+            style={styles.input}
+            placeholder="Địa chỉ"
+            value={address}
+            onChangeText={setAddress}
+          />
+        </View>
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handleUpdateInfo}>
+        <Icon name="edit" size={20} color="#fff" />
         <Text style={styles.buttonText}>Cập nhật thông tin</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.button, styles.logoutButton]} onPress={handleSignOut}>
+        <Icon name="logout" size={20} color="#fff" />
+        <Text style={styles.buttonText}>Đăng xuất</Text>
       </TouchableOpacity>
 
       <Modal visible={isEditModalVisible} animationType="slide">
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Xác nhận cập nhật</Text>
           <TextInput
-            style={styles.input}
+            style={styles.otpInput}
             placeholder="Nhập mã OTP"
             value={otp}
             onChangeText={setOtp}
             keyboardType='numeric'
           />
-          <TouchableOpacity style={styles.button} onPress={handleConfirmUpdate}>
+          <TouchableOpacity style={styles.otpButton} onPress={handleConfirmUpdate}>
+            <Icon name="verified" size={20} color="#fff" />
             <Text style={styles.buttonText}>Xác nhận OTP</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setEditModalVisible(false)}>
@@ -194,7 +267,6 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
   },
   avatarContainer: {
     alignItems: 'center',
@@ -203,67 +275,88 @@ const styles = StyleSheet.create({
   avatar: {
     width: 100,
     height: 100,
-    borderRadius: 50, // Hình tròn
-    backgroundColor: '#ddd',
+    borderRadius: 50,
+    borderColor: '#007bff',
+    borderWidth: 2,
   },
   changeAvatarButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 10,
-    padding: 10,
-    borderRadius: 12, // Bo góc mềm mại
-    backgroundColor: '#007bff',
   },
   changeAvatarText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#007bff',
   },
   fieldContainer: {
-    marginBottom: 20,
+    marginBottom: 15,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  value: {
-    fontSize: 16,
-    color: '#333',
+  fieldWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12, // Bo góc mềm mại
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    fontSize: 16,
-    backgroundColor: '#fff',
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    paddingVertical: 12,
   },
   button: {
     backgroundColor: '#007bff',
-    padding: 15,
-    borderRadius: 12, // Bo góc mềm mại
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
+    justifyContent: 'center',
+    marginBottom: 10,
   },
   buttonText: {
     color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
+    marginLeft: 5,
+    fontSize: 18,
+  },
+  logoutButton: {
+    backgroundColor: '#dc3545',
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
-    padding: 20,
+    alignItems: 'center',
     backgroundColor: '#fff',
+    padding: 20,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
   },
+  otpInput: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    padding: 15,
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  otpButton: {
+    backgroundColor: '#28a745',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
   cancelButton: {
     color: '#007bff',
-    marginTop: 20,
-    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

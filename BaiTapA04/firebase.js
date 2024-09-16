@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp } from 'firebase/app';
 import {
   getAuth,
   initializeAuth,
@@ -7,10 +7,12 @@ import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
-  updatePassword
-} from "firebase/auth";
-import { getDatabase, ref, set, get } from "firebase/database";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+  updatePassword,
+  fetchSignInMethodsForEmail,
+  deleteUser // Thêm deleteUser vào đây
+} from 'firebase/auth';
+import { getDatabase, ref, set, get, remove, update } from 'firebase/database';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
@@ -34,7 +36,7 @@ const auth = initializeAuth(app, {
 const database = getDatabase(app);
 const storage = getStorage(app);
 
-// Hàm cập nhật thông tin người dùng vào Firebase Realtime Database
+// Các hàm liên quan đến người dùng
 const updateUserData = async (userId, data) => {
   try {
     await set(ref(database, `users/${userId}`), data);
@@ -45,15 +47,14 @@ const updateUserData = async (userId, data) => {
   }
 };
 
-// Hàm lấy thông tin người dùng từ Firebase Realtime Database
 const getUserData = async (userId) => {
   try {
     const snapshot = await get(ref(database, `users/${userId}`));
     if (snapshot.exists()) {
       return snapshot.val();
     } else {
-      // Trả về đối tượng người dùng mặc định nếu không có dữ liệu
       return {
+        username: '',
         dob: '',
         phone: '',
         address: '',
@@ -70,8 +71,8 @@ const getUserData = async (userId) => {
 const uploadAvatar = async (userId, file) => {
   try {
     const avatarRef = storageRef(storage, `avatars/${userId}`);
-    await uploadBytes(avatarRef, file); // Upload ảnh
-    const downloadURL = await getDownloadURL(avatarRef); // Lấy URL của ảnh sau khi upload
+    await uploadBytes(avatarRef, file);
+    const downloadURL = await getDownloadURL(avatarRef);
     return downloadURL;
   } catch (error) {
     console.error('Lỗi upload ảnh:', error);
@@ -83,10 +84,56 @@ const uploadAvatar = async (userId, file) => {
 const saveAvatarToDatabase = async (userId, file) => {
   try {
     const avatarUrl = await uploadAvatar(userId, file);
-    await updateUserData(userId, { avatar: avatarUrl }); // Cập nhật URL của avatar vào Database
+    await updateUserData(userId, { avatar: avatarUrl });
     console.log('Avatar đã được lưu vào Database');
   } catch (error) {
     console.error('Lỗi lưu avatar vào Database:', error);
+  }
+};
+
+// Các hàm liên quan đến sản phẩm
+const addProduct = async (productId, productData) => {
+  try {
+    await set(ref(database, `products/${productId}`), productData);
+    console.log('Sản phẩm đã được thêm vào Database');
+  } catch (error) {
+    console.error('Lỗi thêm sản phẩm vào Database:', error);
+    throw error;
+  }
+};
+
+const getProducts = async () => {
+  try {
+    const snapshot = await get(ref(database, 'products'));
+    const products = [];
+    snapshot.forEach((childSnapshot) => {
+      const product = childSnapshot.val();
+      products.push({ id: childSnapshot.key, ...product });
+    });
+    return products;
+  } catch (error) {
+    console.error('Lỗi lấy danh sách sản phẩm:', error);
+    throw error;
+  }
+};
+
+const deleteProduct = async (productId) => {
+  try {
+    await remove(ref(database, `products/${productId}`));
+    console.log('Sản phẩm đã được xóa khỏi Database');
+  } catch (error) {
+    console.error('Lỗi xóa sản phẩm:', error);
+    throw error;
+  }
+};
+
+const updateProduct = async (productId, updatedProduct) => {
+  try {
+    await update(ref(database, `products/${productId}`), updatedProduct);
+    console.log('Sản phẩm đã được cập nhật');
+  } catch (error) {
+    console.error('Lỗi sửa sản phẩm:', error);
+    throw error;
   }
 };
 
@@ -100,5 +147,11 @@ export {
   updateUserData,
   getUserData,
   uploadAvatar,
-  saveAvatarToDatabase
+  saveAvatarToDatabase,
+  addProduct,
+  getProducts,
+  deleteProduct,
+  updateProduct,
+  fetchSignInMethodsForEmail,
+  deleteUser // Export deleteUser để sử dụng trong các phần khác của ứng dụng
 };

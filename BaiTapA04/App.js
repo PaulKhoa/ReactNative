@@ -6,13 +6,24 @@ import LoginScreen from './screen/LoginScreen';
 import HomeScreen from './screen/HomeScreen';
 import ForgetPasswordScreen from './screen/ForgetPasswordScreen';
 import UserScreen from './screen/UserScreen'; // Import UserScreen
+import AdminPage from './Admin/AdminPage';   // Import AdminPage
+import ProductManagementScreen from './Admin/ProductManagementScreen'; // Import ProductManagementScreen
+import AddProductScreen from './Admin/AddProductScreen'; // Import AddProductScreen
+import AdminProductDetailsScreen from './Admin/AdminProductDetailsScreen';
+import ProductDetailsScreen from './screen/ProductDetailsScreen'; // Dành cho người dùng
+import FavoritesScreen from './screen/FavoritesScreen'; // Import FavoritesScreen
 
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator
+        initialRouteName="Login"
+        screenOptions={{
+          headerLeft: () => null, // Bỏ nút mũi tên quay lại cho tất cả màn hình
+        }}
+      >
         <Stack.Screen
           name="Register"
           component={RegisterScreen}
@@ -26,7 +37,7 @@ const App = () => {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: 'Trang Chủ' }} 
+          options={{ headerShown: false }}  
         />
         <Stack.Screen
           name="ForgetPassword"
@@ -36,7 +47,37 @@ const App = () => {
         <Stack.Screen
           name="UserScreen"
           component={UserScreen}
-          options={{ title: 'Thông Tin Người Dùng' }} // Tùy chọn tiêu đề màn hình
+          options={{ headerShown: false }}  
+        />
+        <Stack.Screen
+          name="AdminPage"
+          component={AdminPage}
+          options={{ title: 'Trang Quản Trị' }} // Bạn có thể thay đổi title tùy ý
+        />
+        <Stack.Screen
+          name="ProductManagementScreen"
+          component={ProductManagementScreen}
+          options={{ title: 'Quản Lý Sản Phẩm' }}  
+        />
+        <Stack.Screen
+          name="AdminProductDetailsScreen"
+          component={AdminProductDetailsScreen}
+          options={{ title: 'Chi Tiết Sản Phẩm' }}  
+        />
+        <Stack.Screen
+          name="ProductDetailsScreen"
+          component={ProductDetailsScreen}
+          options={{ title: 'Chi Tiết Sản Phẩm' }}  
+        />
+        <Stack.Screen
+          name="AddProductScreen"
+          component={AddProductScreen}
+          options={{ title: 'Thêm Sản Phẩm' }} // Bạn có thể thay đổi title tùy ý
+        />
+        <Stack.Screen
+          name="FavoritesScreen"
+          component={FavoritesScreen}
+          options={{ title: 'Danh Sách Yêu Thích' }} // Bạn có thể thay đổi title tùy ý
         />
       </Stack.Navigator>
     </NavigationContainer>

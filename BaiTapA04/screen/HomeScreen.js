@@ -1,69 +1,98 @@
-// HomeScreen.js
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Modal } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons'; // Biểu tượng user
-import { auth, signOut } from '../firebase'; // Giả sử bạn đã có hàm này
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import { FontAwesome } from '@expo/vector-icons';
+import UserScreen from './UserScreen';
+import HomeContent from './HomeContent';
+import FavoritesScreen from './FavoritesScreen';
+import CartScreen from './CartScreen';
+import OrderScreen from './OrderScreen'; // Import OrderScreen
 
-const HomeScreen = ({ navigation }) => {
-  const [isMenuVisible, setMenuVisible] = useState(false);
+const Tab = createBottomTabNavigator();
+const HomeStack = createStackNavigator();
+const UserStack = createStackNavigator();
 
-  const handleSignOut = () => {
-    signOut(auth)
-      .then(() => {
-        navigation.navigate('Login');
-      })
-      .catch(error => {
-        Alert.alert('Đăng xuất thất bại', error.message);
-      });
-  };
+const HomeStackScreen = () => (
+  <HomeStack.Navigator
+    screenOptions={{
+      headerLeft: () => null, // Bỏ nút quay lại
+    }}
+  >
+    <HomeStack.Screen
+      name="HomeContent"
+      component={HomeContent}
+      options={{ title: 'Trang Chủ' }}
+    />
+  </HomeStack.Navigator>
+);
 
+const UserStackScreen = () => (
+  <UserStack.Navigator
+    screenOptions={{
+      headerLeft: () => null, // Bỏ nút quay lại
+    }}
+  >
+    <UserStack.Screen
+      name="UserScreen"
+      component={UserScreen}
+      options={{ title: 'Tài Khoản' }}
+    />
+  </UserStack.Navigator>
+);
+
+const HomeScreen = () => {
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.userIcon} onPress={() => setMenuVisible(!isMenuVisible)}>
-        <FontAwesome name="user" size={30} color="black" />
-      </TouchableOpacity>
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
 
-      {isMenuVisible && (
-        <View style={styles.menu}>
-          <TouchableOpacity onPress={() => { setMenuVisible(false); navigation.navigate('UserScreen'); }}>
-            <Text style={styles.menuItem}>Thông tin người dùng</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSignOut}>
-            <Text style={styles.menuItem}>Đăng xuất</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+          if (route.name === 'HomeTab') {
+            iconName = 'home';
+          } else if (route.name === 'Account') {
+            iconName = 'user';
+          } else if (route.name === 'Favorites') {
+            iconName = 'star';
+          } else if (route.name === 'Cart') {
+            iconName = 'shopping-cart';
+          } else if (route.name === 'Order') {
+            iconName = 'list'; // Thay đổi biểu tượng nếu cần
+          }
+
+          return <FontAwesome name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: 'tomato',
+        tabBarInactiveTintColor: 'gray',
+        headerShown: false,
+      })}
+    >
+      <Tab.Screen
+        name="HomeTab"
+        component={HomeStackScreen}
+        options={{ title: 'Trang Chủ' }}
+      />
+      <Tab.Screen
+        name="Favorites"
+        component={FavoritesScreen}
+        options={{ title: 'Yêu Thích' }}
+      />
+      <Tab.Screen
+        name="Cart"
+        component={CartScreen}
+        options={{ title: 'Giỏ Hàng' }}
+      />
+      <Tab.Screen
+        name="Order"
+        component={OrderScreen} // Thêm OrderScreen vào Tab Navigator
+        options={{ title: 'Đơn Hàng' }}
+      />
+      <Tab.Screen
+        name="Account"
+        component={UserStackScreen}
+        options={{ title: 'Tài Khoản' }}
+      />
+    </Tab.Navigator>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  userIcon: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
-  },
-  menu: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-  },
-  menuItem: {
-    padding: 10,
-    fontSize: 16,
-  },
-});
 
 export default HomeScreen;

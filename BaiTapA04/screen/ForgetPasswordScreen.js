@@ -1,39 +1,38 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome'; // Import Icon
 import { sendOTPEmail, generateOTP } from '../otpService'; // Import từ otpService.js
 import { auth, sendPasswordResetEmail } from '../firebase';
 
 const ForgetPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState(''); // OTP từ người dùng
-  const [generatedOtp, setGeneratedOtp] = useState(''); // OTP ngẫu nhiên được gửi
-  const [isOtpSent, setIsOtpSent] = useState(false); // Trạng thái đã gửi OTP chưa
-  const [loading, setLoading] = useState(false); // Trạng thái gửi OTP
+  const [otp, setOtp] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Hàm gửi OTP qua email
   const handleSendOTP = async () => {
     if (!email) {
       Alert.alert('Vui lòng nhập email hợp lệ');
       return;
     }
-    const otp = generateOTP(); // Tạo mã OTP
-    setLoading(true); // Hiển thị trạng thái loading
+    const otp = generateOTP();
+    setLoading(true);
     try {
-      await sendOTPEmail(email, otp); // Gửi OTP qua email
-      setGeneratedOtp(otp); // Lưu mã OTP được tạo
-      setIsOtpSent(true); // Hiển thị input nhập OTP
+      await sendOTPEmail(email, otp);
+      setGeneratedOtp(otp);
+      setIsOtpSent(true);
       Alert.alert('Mã OTP đã được gửi!');
     } catch (error) {
       Alert.alert('Lỗi khi gửi OTP', error.message);
     } finally {
-      setLoading(false); // Kết thúc trạng thái loading
+      setLoading(false);
     }
   };
 
-  // Hàm đặt lại mật khẩu sau khi người dùng nhập mã OTP
   const handleResetPassword = () => {
     if (!otp || otp !== generatedOtp) {
-      Alert.alert('Mã OTP không hợp lệ');
+      Alert.alert('Lỗi', 'Mã OTP không đúng!');
       return;
     }
     sendPasswordResetEmail(auth, email)
@@ -41,7 +40,7 @@ const ForgetPasswordScreen = ({ navigation }) => {
         Alert.alert('Đã gửi email đặt lại mật khẩu');
         navigation.navigate('Login');
       })
-      .catch(error => {
+      .catch((error) => {
         Alert.alert('Gửi email thất bại', error.message);
       });
   };
@@ -56,10 +55,18 @@ const ForgetPasswordScreen = ({ navigation }) => {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        placeholderTextColor="#999"
       />
       {!isOtpSent ? (
         <TouchableOpacity style={styles.button} onPress={handleSendOTP} disabled={loading}>
-          <Text style={styles.buttonText}>{loading ? 'Đang gửi...' : 'Gửi OTP'}</Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <>
+              <Icon name="envelope" size={20} color="#fff" style={styles.icon} />
+              <Text style={styles.buttonText}>Gửi OTP</Text>
+            </>
+          )}
         </TouchableOpacity>
       ) : (
         <>
@@ -69,13 +76,16 @@ const ForgetPasswordScreen = ({ navigation }) => {
             value={otp}
             onChangeText={setOtp}
             keyboardType="number-pad"
+            placeholderTextColor="#999"
           />
           <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
+            <Icon name="key" size={20} color="#fff" style={styles.icon} />
             <Text style={styles.buttonText}>Đặt lại mật khẩu</Text>
           </TouchableOpacity>
         </>
       )}
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+      <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.backButton}>
+        <Icon name="arrow-left" size={20} color="#007BFF" />
         <Text style={styles.link}>Quay lại Đăng nhập</Text>
       </TouchableOpacity>
     </View>
@@ -87,39 +97,63 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F5F5F5',
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
+    color: '#333',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
     padding: 15,
     marginVertical: 10,
-    borderRadius: 10,
-    backgroundColor: '#fff',
+    borderRadius: 12,
+    backgroundColor: '#FFF',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
+    fontSize: 16,
+    color: '#333',
   },
   button: {
+    flexDirection: 'row',
     backgroundColor: '#007BFF',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 25,
     alignItems: 'center',
-    marginVertical: 10,
+    justifyContent: 'center',
+    marginVertical: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 3,
   },
   buttonText: {
-    color: '#fff',
+    color: '#FFF',
+    fontSize: 18,
     fontWeight: 'bold',
+    marginLeft: 10, // Thêm khoảng cách giữa icon và chữ
+  },
+  icon: {
+    marginRight: 10,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
   },
   link: {
     color: '#007BFF',
-    textAlign: 'center',
-    marginVertical: 10,
+    fontSize: 16,
+    marginLeft: 10, // Thêm khoảng cách giữa icon và chữ
   },
 });
 
 export default ForgetPasswordScreen;
- 

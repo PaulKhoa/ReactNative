@@ -15,14 +15,14 @@ export const sendOTPEmail = async (email, otp) => {
       {
         From: {
           Email: "khoapham1172003@gmail.com", // Email người gửi
-          Name: "PaulKhoa", // Tên người gửi
+          Name: "Mobile Shop", // Tên người gửi
         },
         To: [
           {
             Email: email, // Email người nhận
           },
         ],
-        Subject: "Xác nhận mã OTP - PaulKhoa",
+        Subject: "Xác nhận mã OTP - Mobile Shop",
         TextPart: `Xin chào,
 
 Mã OTP của bạn là: ${otp}. 
@@ -30,7 +30,7 @@ Mã OTP của bạn là: ${otp}.
 Mã này sẽ hết hạn sau 10 phút. Vui lòng không chia sẻ mã này với người khác.
 
 Trân trọng,
-Đội ngũ PaulKhoa`,
+Đội ngũ Mobile Shop`,
       },
     ],
   };
