@@ -1,4 +1,3 @@
-// ProductManagementScreen.js
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -39,13 +38,13 @@ const ProductManagementScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.productCard} onPress={() => handleViewDetails(item)}>
             <Image source={{ uri: item.image }} style={styles.productImage} />
             <Text style={styles.productName}>{item.name}</Text>
-            <Text style={styles.productPrice}>{item.price} VNĐ</Text>
+            <Text style={styles.productPrice}>{Number(item.price).toLocaleString('vi-VN')} VNĐ</Text>
           </TouchableOpacity>
         )}
       />
       <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton} onPress={handleAdd}>
-          <Icon name="add-circle-outline" size={30} color="#4CAF50" />
+          <Icon name="add-circle-outline" size={30} color="#FF5722" />
           <Text style={styles.footerButtonText}>Thêm sản phẩm</Text>
         </TouchableOpacity>
       </View>
@@ -56,15 +55,18 @@ const ProductManagementScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FAFAFA', // Màu nền nhẹ nhàng và sáng
     padding: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#333',
+    color: '#FF5722', // Màu cam đậm để thu hút sự chú ý
     textAlign: 'center',
+    textShadowColor: '#BDBDBD', // Hiệu ứng đổ bóng cho chữ
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 5,
   },
   productCard: {
     backgroundColor: '#FFF',
@@ -77,6 +79,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     alignItems: 'center',
+    borderColor: '#FF5722', // Viền nổi bật
+    borderWidth: 1,
   },
   productImage: {
     width: 100,
@@ -86,14 +90,17 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   productName: {
-    fontSize: 18,
-    color: '#333',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#212121',
     textAlign: 'center',
+    marginVertical: 5,
   },
   productPrice: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: 18,
+    color: '#388E3C', // Màu xanh để thể hiện giá tiền
     marginTop: 5,
+    fontWeight: '600',
     textAlign: 'center',
   },
   footer: {
@@ -114,9 +121,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   footerButtonText: {
-    fontSize: 14,
-    color: '#333',
+    fontSize: 16,
+    color: '#FF5722', // Màu cam nhấn mạnh
     marginTop: 5,
+    fontWeight: '500',
   },
 });
 

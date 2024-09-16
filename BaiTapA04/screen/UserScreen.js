@@ -83,8 +83,8 @@ const UserScreen = ({ navigation }) => {
 
       if (Object.values(changes).some(change => change)) {
         Alert.alert(
-          'Xác nhận thay đổi',
-          'Các thông tin sẽ thay đổi, bạn chắc chưa?',
+          'Xác nhận',
+          'Bạn có chắc muốn lưu các thay đổi?',
           [
             {
               text: 'Hủy',
@@ -100,7 +100,7 @@ const UserScreen = ({ navigation }) => {
               },
             },
             {
-              text: 'Xác nhận',
+              text: 'Lưu',
               onPress: () => {
                 handleSendOtp();
                 setEditModalVisible(true);
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   button: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#33CC33',
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderRadius: 5,
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   logoutButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: '#FF5252',
   },
   modalContainer: {
     flex: 1,

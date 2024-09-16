@@ -7,42 +7,71 @@ const AdminProductDetailsScreen = ({ route, navigation }) => {
   const { product } = route.params;
   const [isEditing, setIsEditing] = useState(false);
   const [editedProduct, setEditedProduct] = useState({
-    id: product.id, // Ensure ID is included for updates
+    id: product.id,
     name: product.name,
     brand: product.brand,
     category: product.category,
     description: product.description,
-    price: product.price.toString(), // Ensure price is a string
+    price: product.price.toString(),
     image: product.image,
   });
 
+  const formatPrice = (price) => {
+    return price.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+
   const handleDelete = async () => {
-    try {
-      await deleteProduct(product.id);
-      Alert.alert('Thông báo', 'Sản phẩm đã được xóa.');
-      navigation.goBack();
-    } catch (error) {
-      console.error('Lỗi xóa sản phẩm:', error);
-      Alert.alert('Thông báo', 'Có lỗi xảy ra khi xóa sản phẩm.');
-    }
+    Alert.alert(
+      'Xác nhận',
+      'Bạn có chắc chắn muốn xóa sản phẩm này không?',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Xóa',
+          onPress: async () => {
+            try {
+              await deleteProduct(product.id);
+              Alert.alert('Thông báo', 'Sản phẩm đã được xóa.');
+              navigation.goBack();
+            } catch (error) {
+              console.error('Lỗi xóa sản phẩm:', error);
+              Alert.alert('Thông báo', 'Có lỗi xảy ra khi xóa sản phẩm.');
+            }
+          },
+          style: 'destructive',
+        },
+      ]
+    );
   };
 
   const handleEdit = async () => {
-    try {
-      await updateProduct(editedProduct.id, {
-        name: editedProduct.name,
-        brand: editedProduct.brand,
-        category: editedProduct.category,
-        description: editedProduct.description,
-        price: parseFloat(editedProduct.price), // Convert price back to number
-        image: editedProduct.image,
-      });
-      Alert.alert('Thông báo', 'Sản phẩm đã được cập nhật.');
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Lỗi sửa sản phẩm:', error);
-      Alert.alert('Thông báo', 'Có lỗi xảy ra khi sửa sản phẩm.');
-    }
+    Alert.alert(
+      'Xác nhận',
+      'Bạn có chắc chắn muốn lưu các thay đổi?',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Lưu',
+          onPress: async () => {
+            try {
+              await updateProduct(editedProduct.id, {
+                name: editedProduct.name,
+                brand: editedProduct.brand,
+                category: editedProduct.category,
+                description: editedProduct.description,
+                price: parseFloat(editedProduct.price),
+                image: editedProduct.image,
+              });
+              Alert.alert('Thông báo', 'Sản phẩm đã được cập nhật.');
+              setIsEditing(false);
+            } catch (error) {
+              console.error('Lỗi sửa sản phẩm:', error);
+              Alert.alert('Thông báo', 'Có lỗi xảy ra khi sửa sản phẩm.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -111,7 +140,7 @@ const AdminProductDetailsScreen = ({ route, navigation }) => {
           <Text style={styles.name}>{editedProduct.name}</Text>
           <Text style={styles.brand}>{editedProduct.brand}</Text>
           <Text style={styles.category}>{editedProduct.category}</Text>
-          <Text style={styles.price}>{editedProduct.price} VNĐ</Text>
+          <Text style={styles.price}>{formatPrice(editedProduct.price)} VNĐ</Text>
           <Text style={styles.description}>{editedProduct.description}</Text>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button} onPress={() => setIsEditing(true)}>
