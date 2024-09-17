@@ -1,19 +1,19 @@
-// src/screens/AddProductScreen.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
-import { addProduct } from '../firebase';
+import { updateProduct } from '../firebase'; // Hàm cập nhật sản phẩm trong Firebase
 import * as ImageManipulator from 'expo-image-manipulator';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const AddProductScreen = ({ navigation }) => {
-  const [name, setName] = useState('');
-  const [brand, setBrand] = useState('');
-  const [category, setCategory] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [image, setImage] = useState(null);
+const EditProductScreen = ({ route, navigation }) => {
+  const { product } = route.params; // Nhận dữ liệu sản phẩm từ route params
+  const [name, setName] = useState(product.name);
+  const [brand, setBrand] = useState(product.brand);
+  const [category, setCategory] = useState(product.category);
+  const [description, setDescription] = useState(product.description);
+  const [price, setPrice] = useState(product.price.toString());
+  const [image, setImage] = useState(product.image);
 
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -33,31 +33,44 @@ const AddProductScreen = ({ navigation }) => {
     }
   };
 
-  const handleAddProduct = async () => {
+  const handleUpdateProduct = async () => {
     if (!name || !brand || !category || !description || !price || !image) {
       Alert.alert('Thông báo', 'Vui lòng điền đầy đủ thông tin sản phẩm.');
       return;
     }
-
-    const productId = Date.now().toString(); // Tạo ID sản phẩm tạm thời
-    const productData = {
-      name,
-      brand,
-      category,
-      description,
-      price: parseFloat(price),
-      image
-    };
-
-    try {
-      await addProduct(productId, productData); // Thêm sản phẩm vào database
-      Alert.alert('Thông báo', 'Sản phẩm đã được thêm thành công!');
-      navigation.goBack(); // Quay lại trang trước đó
-    } catch (error) {
-      console.error('Lỗi thêm sản phẩm:', error);
-      Alert.alert('Thông báo', 'Có lỗi xảy ra khi thêm sản phẩm.');
-    }
+  
+    Alert.alert(
+      'Xác nhận',
+      'Bạn có chắc muốn lưu các thay đổi cho sản phẩm này?',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Xác nhận',
+          onPress: async () => {
+            const productData = {
+              name,
+              brand,
+              category,
+              description,
+              price: parseFloat(price),
+              image,
+            };
+  
+            try {
+              await updateProduct(product.id, productData); // Cập nhật sản phẩm trong database
+              Alert.alert('Thông báo', 'Sản phẩm đã được cập nhật thành công!');
+              navigation.goBack(); // Quay lại trang trước đó
+            } catch (error) {
+              console.error('Lỗi cập nhật sản phẩm:', error);
+              Alert.alert('Thông báo', 'Có lỗi xảy ra khi cập nhật sản phẩm.');
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   };
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -70,6 +83,9 @@ const AddProductScreen = ({ navigation }) => {
             <Text style={styles.imageText}>Chọn ảnh sản phẩm</Text>
           </TouchableOpacity>
         )}
+        <TouchableOpacity style={styles.editImageButton} onPress={handlePickImage}>
+          <Icon name="edit" size={20} color="#fff" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.inputContainer}>
@@ -110,7 +126,7 @@ const AddProductScreen = ({ navigation }) => {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Mô tả sản phẩm</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, styles.descriptionInput]}
           placeholder="Nhập mô tả sản phẩm"
           value={description}
           onChangeText={setDescription}
@@ -129,10 +145,16 @@ const AddProductScreen = ({ navigation }) => {
         />
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleAddProduct}>
-        <Icon name="add" size={20} color="#fff" />
-        <Text style={styles.buttonText}>Thêm Sản Phẩm</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={handleUpdateProduct}>
+          <Icon name="save" size={20} color="#fff" />
+          <Text style={styles.buttonText}>Lưu</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, styles.backButton]} onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={20} color="#fff" />
+          <Text style={styles.buttonText}>Trở lại</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 };
@@ -146,6 +168,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     alignItems: 'center',
     marginBottom: 20,
+    position: 'relative', // Để đặt nút chỉnh sửa trên ảnh
   },
   imagePlaceholder: {
     width: '100%',
@@ -168,6 +191,14 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 10,
   },
+  editImageButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    backgroundColor: '#FF5722',
+    borderRadius: 50,
+    padding: 10,
+  },
   inputContainer: {
     marginBottom: 20,
   },
@@ -186,12 +217,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#fff',
   },
+  descriptionInput: {
+    height: 100,
+  },
   picker: {
     height: 50,
     borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 12,
     backgroundColor: '#fff',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
   },
   button: {
     flexDirection: 'row',
@@ -201,6 +240,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
   },
+  backButton: {
+    backgroundColor: '#2196F3',
+  },
   buttonText: {
     color: '#fff',
     fontSize: 18,
@@ -209,4 +251,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddProductScreen;
+export default EditProductScreen;

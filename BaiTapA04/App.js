@@ -12,6 +12,7 @@ import AddProductScreen from './Admin/AddProductScreen'; // Import AddProductScr
 import AdminProductDetailsScreen from './Admin/AdminProductDetailsScreen';
 import ProductDetailsScreen from './screen/ProductDetailsScreen'; // Dành cho người dùng
 import FavoritesScreen from './screen/FavoritesScreen'; // Import FavoritesScreen
+import EditProductScreen from './Admin/EditProductScreen'; // Import EditProductScreen
 
 const Stack = createStackNavigator();
 
@@ -78,6 +79,11 @@ const App = () => {
           name="FavoritesScreen"
           component={FavoritesScreen}
           options={{ title: 'Danh Sách Yêu Thích' }} // Bạn có thể thay đổi title tùy ý
+        />
+        <Stack.Screen
+          name="EditProductScreen"
+          component={EditProductScreen}
+          options={{ title: 'Chỉnh Sửa Sản Phẩm' }} // Bạn có thể thay đổi title tùy ý
         />
       </Stack.Navigator>
     </NavigationContainer>

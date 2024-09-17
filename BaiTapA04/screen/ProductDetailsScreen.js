@@ -93,17 +93,17 @@ const styles = StyleSheet.create({
     fontWeight: '700', // Đậm hơn cho giá
   },
   brand: {
-    fontSize: 16,
+    fontSize: 19,
     color: '#666',
     marginBottom: 8,
   },
   category: {
-    fontSize: 16,
+    fontSize: 19,
     color: '#666',
     marginBottom: 12,
   },
   description: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#666',
     marginBottom: 20,
     textAlign: 'justify',
