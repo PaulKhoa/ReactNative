@@ -137,6 +137,20 @@ const updateProduct = async (productId, updatedProduct) => {
   }
 };
 
+const updateProductSales = async (productId, newSales) => {
+  try {
+    // Cập nhật doanh số của sản phẩm trong Realtime Database
+    await update(ref(database, `products/${productId}`), {
+      sales: newSales
+    });
+    console.log('Doanh số của sản phẩm đã được cập nhật');
+  } catch (error) {
+    console.error('Lỗi cập nhật doanh số sản phẩm:', error);
+    throw error;
+  }
+};
+
+
 export {
   auth,
   createUserWithEmailAndPassword,
@@ -153,5 +167,6 @@ export {
   deleteProduct,
   updateProduct,
   fetchSignInMethodsForEmail,
+  updateProductSales,
   deleteUser // Export deleteUser để sử dụng trong các phần khác của ứng dụng
 };

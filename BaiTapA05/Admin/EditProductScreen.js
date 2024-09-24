@@ -5,6 +5,7 @@ import { Picker } from '@react-native-picker/picker';
 import { updateProduct } from '../firebase'; // Hàm cập nhật sản phẩm trong Firebase
 import * as ImageManipulator from 'expo-image-manipulator';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'; // Import Firebase storage
 
 const EditProductScreen = ({ route, navigation }) => {
   const { product } = route.params; // Nhận dữ liệu sản phẩm từ route params
@@ -15,6 +16,7 @@ const EditProductScreen = ({ route, navigation }) => {
   const [price, setPrice] = useState(product.price.toString());
   const [image, setImage] = useState(product.image);
 
+  // Hàm chọn và upload ảnh lên Firebase
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -23,22 +25,35 @@ const EditProductScreen = ({ route, navigation }) => {
     });
 
     if (!result.canceled) {
-      // Thay đổi kích thước ảnh tại đây
       const manipResult = await ImageManipulator.manipulateAsync(
         result.assets[0].uri,
-        [{ resize: { width: 600 } }], // Đặt kích thước ảnh mong muốn tại đây
-        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } // Tùy chỉnh chất lượng ảnh
+        [{ resize: { width: 600 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
       );
-      setImage(manipResult.uri); // Cập nhật URI ảnh đã được thay đổi kích thước
+      const imageUrl = await uploadImage(manipResult.uri); // Upload ảnh và lấy URL từ Firebase
+      setImage(imageUrl); // Cập nhật URL ảnh
     }
   };
 
+  // Hàm upload ảnh lên Firebase
+  const uploadImage = async (imageUri) => {
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+    const storage = getStorage();
+    const productImageRef = storageRef(storage, `products/${Date.now()}.jpg`);
+
+    await uploadBytes(productImageRef, blob);
+    const downloadURL = await getDownloadURL(productImageRef);
+    return downloadURL;
+  };
+
+  // Hàm xử lý cập nhật sản phẩm
   const handleUpdateProduct = async () => {
     if (!name || !brand || !category || !description || !price || !image) {
       Alert.alert('Thông báo', 'Vui lòng điền đầy đủ thông tin sản phẩm.');
       return;
     }
-  
+
     Alert.alert(
       'Xác nhận',
       'Bạn có chắc muốn lưu các thay đổi cho sản phẩm này?',
@@ -53,9 +68,9 @@ const EditProductScreen = ({ route, navigation }) => {
               category,
               description,
               price: parseFloat(price),
-              image,
+              image, // URL từ Firebase
             };
-  
+
             try {
               await updateProduct(product.id, productData); // Cập nhật sản phẩm trong database
               Alert.alert('Thông báo', 'Sản phẩm đã được cập nhật thành công!');

@@ -13,6 +13,8 @@ import AdminProductDetailsScreen from './Admin/AdminProductDetailsScreen';
 import ProductDetailsScreen from './screen/ProductDetailsScreen'; // Dành cho người dùng
 import FavoritesScreen from './screen/FavoritesScreen'; // Import FavoritesScreen
 import EditProductScreen from './Admin/EditProductScreen'; // Import EditProductScreen
+import SalesManagementScreen from './Admin/SalesManagementScreen';
+
 
 const Stack = createStackNavigator();
 
@@ -84,6 +86,11 @@ const App = () => {
           name="EditProductScreen"
           component={EditProductScreen}
           options={{ title: 'Chỉnh Sửa Sản Phẩm' }} // Bạn có thể thay đổi title tùy ý
+        />
+        <Stack.Screen
+          name="SalesManagementScreen"
+          component={SalesManagementScreen}
+          options={{ title: 'Quản Lý Doanh Số' }} // Bạn có thể thay đổi title tùy ý
         />
       </Stack.Navigator>
     </NavigationContainer>

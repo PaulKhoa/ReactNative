@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Import icons for better UX
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
+import tw from 'tailwind-react-native-classnames'; // Import Tailwind for styling
 
 const AdminPage = ({ navigation }) => {
   const handleLogout = () => {
@@ -17,84 +18,46 @@ const AdminPage = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Danh Mục Quản Lý</Text>
+    <View style={tw`flex-1 p-5 bg-gray-100`}>
+      <Text style={tw`text-2xl font-bold text-center text-gray-800 my-5`}>Danh Mục Quản Lý</Text>
 
       {/* Section for Product Management */}
       <TouchableOpacity
-        style={styles.card}
+        style={tw`flex-row items-center bg-white p-4 mb-3 rounded-lg shadow`}
         onPress={() => navigation.navigate('ProductManagementScreen')}
       >
         <Icon name="inventory" size={30} color="#4CAF50" />
-        <Text style={styles.cardText}>Quản lý sản phẩm</Text>
+        <Text style={tw`ml-4 text-lg text-gray-800`}>Quản lý sản phẩm</Text>
       </TouchableOpacity>
 
       {/* Section for User Management */}
-      <TouchableOpacity style={styles.card}>
+      <TouchableOpacity style={tw`flex-row items-center bg-white p-4 mb-3 rounded-lg shadow`}>
         <Icon name="people" size={30} color="#FF9800" />
-        <Text style={styles.cardText}>Quản lý người dùng</Text>
+        <Text style={tw`ml-4 text-lg text-gray-800`}>Quản lý người dùng</Text>
       </TouchableOpacity>
 
       {/* Section for Order Management */}
-      <TouchableOpacity style={styles.card}>
+      <TouchableOpacity style={tw`flex-row items-center bg-white p-4 mb-3 rounded-lg shadow`}>
         <Icon name="shopping-cart" size={30} color="#2196F3" />
-        <Text style={styles.cardText}>Quản lý đơn hàng</Text>
+        <Text style={tw`ml-4 text-lg text-gray-800`}>Quản lý đơn hàng</Text>
+      </TouchableOpacity>
+
+      {/* New Section for Sales Management */}
+      <TouchableOpacity 
+        style={tw`flex-row items-center bg-white p-4 mb-3 rounded-lg shadow`}
+        onPress={() => navigation.navigate('SalesManagementScreen')}
+      >
+        <Icon name="bar-chart" size={30} color="#673AB7" />
+        <Text style={tw`ml-4 text-lg text-gray-800`}>Quản lý doanh số</Text>
       </TouchableOpacity>
 
       {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Đăng xuất</Text>
+      <TouchableOpacity style={tw`flex-row justify-center items-center bg-red-500 p-4 rounded-lg mt-5`} onPress={handleLogout}>
+        <Text style={tw`text-lg text-white font-bold mr-2`}>Đăng xuất</Text>
         <Icon name="exit-to-app" size={24} color="#FFF" />
       </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#F5F5F5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 20,
-    color: '#333',
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    padding: 20,
-    marginVertical: 10,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3, // For Android shadow
-  },
-  cardText: {
-    fontSize: 18,
-    marginLeft: 15,
-    color: '#333',
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FF5252',
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 30,
-  },
-  logoutText: {
-    fontSize: 16,
-    color: '#FFF',
-    marginRight: 10,
-  },
-});
 
 export default AdminPage;

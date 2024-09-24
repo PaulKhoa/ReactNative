@@ -11,7 +11,9 @@ import OrderScreen from './OrderScreen'; // Import OrderScreen
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
 const UserStack = createStackNavigator();
+const FavoriteStack = createStackNavigator(); // Tạo Stack cho Favorites
 
+// HomeStackScreen
 const HomeStackScreen = () => (
   <HomeStack.Navigator
     screenOptions={{
@@ -26,6 +28,7 @@ const HomeStackScreen = () => (
   </HomeStack.Navigator>
 );
 
+// UserStackScreen
 const UserStackScreen = () => (
   <UserStack.Navigator
     screenOptions={{
@@ -40,6 +43,21 @@ const UserStackScreen = () => (
   </UserStack.Navigator>
 );
 
+// FavoriteStackScreen
+const FavoriteStackScreen = () => (
+  <FavoriteStack.Navigator
+    screenOptions={{
+      headerLeft: () => null, // Bỏ nút quay lại
+    }}
+  >
+    <FavoriteStack.Screen
+      name="Favorites"
+      component={FavoritesScreen}
+      options={{ title: 'Yêu Thích' }}
+    />
+  </FavoriteStack.Navigator>
+);
+
 const HomeScreen = () => {
   return (
     <Tab.Navigator
@@ -51,7 +69,7 @@ const HomeScreen = () => {
             iconName = 'home';
           } else if (route.name === 'Account') {
             iconName = 'user';
-          } else if (route.name === 'Favorites') {
+          } else if (route.name === 'FavoritesTab') {
             iconName = 'star';
           } else if (route.name === 'Cart') {
             iconName = 'shopping-cart';
@@ -72,8 +90,8 @@ const HomeScreen = () => {
         options={{ title: 'Trang Chủ' }}
       />
       <Tab.Screen
-        name="Favorites"
-        component={FavoritesScreen}
+        name="FavoritesTab"
+        component={FavoriteStackScreen} // Thêm FavoriteStackScreen
         options={{ title: 'Yêu Thích' }}
       />
       <Tab.Screen
