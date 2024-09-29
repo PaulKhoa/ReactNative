@@ -7,13 +7,14 @@ import { getProducts, updateProductSales } from '../firebase';
 // Thành phần hiển thị thông tin sản phẩm
 const ProductItem = React.memo(({ item, sales, onSalesChange, onSave }) => {
   return (
-    <View style={tw`bg-white p-4 mb-4 rounded-lg shadow-md border border-gray-300`}>
-      <Image source={{ uri: item.image }} style={tw`w-24 h-24 rounded-lg mx-auto mb-2`} />
-      <Text style={tw`text-xl font-semibold text-center mb-2 text-gray-800`}>{item.name}</Text>
-      <Text style={tw`text-sm text-center text-gray-600 mb-2`}>Danh mục: {item.category}</Text>
-      <Text style={tw`text-sm text-center text-gray-600 mb-4`}>Hãng: {item.brand}</Text>
+    <View style={tw`bg-white p-4 mb-4 rounded-lg shadow-md border border-gray-300 flex-1 m-2`}>
+      <Image 
+        source={{ uri: item.image }} 
+        style={tw`w-16 h-16 rounded-lg mx-auto mb-2`} 
+      />
+      <Text style={tw`text-lg font-semibold text-center mb-2 text-gray-800`}>{item.name}</Text>
 
-      <View style={tw`flex-row items-center border border-gray-300 rounded-lg overflow-hidden h-12`}>
+      <View style={tw`flex-row items-center border border-gray-300 rounded-lg overflow-hidden h-12 mb-2`}>
         <TextInput
           style={tw`flex-1 p-2 text-center text-gray-800 text-lg rounded-l-lg`}
           keyboardType="numeric"
@@ -22,16 +23,17 @@ const ProductItem = React.memo(({ item, sales, onSalesChange, onSave }) => {
           value={sales?.toString() || '0'}
           onChangeText={(text) => onSalesChange(item.id, parseInt(text) || 0)}
         />
-        <TouchableOpacity
-          style={tw`bg-blue-700 h-full py-2 px-4 justify-center items-center rounded-r-lg shadow-md`}
-          onPress={() => onSave(item.id)}
-        >
-          <View style={tw`flex-row items-center`}>
-            <Icon name="update" size={24} color="#FFF" />
-            <Text style={tw`text-white text-sm font-semibold ml-2`}>Cập nhật</Text>
-          </View>
-        </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        style={tw`bg-blue-700 h-12 justify-center items-center rounded-lg shadow-md`}
+        onPress={() => onSave(item.id)}
+      >
+        <View style={tw`flex-row items-center`}>
+          <Icon name="update" size={24} color="#FFF" />
+          <Text style={tw`text-white text-sm font-semibold ml-2`}>Cập nhật</Text>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 });
@@ -89,6 +91,8 @@ const SalesManagementScreen = ({ navigation }) => {
             onSave={handleSaveSales} 
           />
         )}
+        numColumns={2} // Hiển thị 2 cột
+        columnWrapperStyle={tw`justify-between`} // Căn giữa các cột
       />
     </View>
   );

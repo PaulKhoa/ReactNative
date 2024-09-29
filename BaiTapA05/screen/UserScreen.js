@@ -102,27 +102,57 @@ const UserScreen = ({ navigation }) => {
   };
 
   const handleUpdateInfo = () => {
-    const userId = auth.currentUser?.uid;
-    if (!userId) return;
+    let hasErrors = false;
+    const errors = [];
   
-    getUserData(userId).then(userData => {
+    // Kiểm tra tên (cho phép dấu tiếng Việt)
+    if (name !== "" && !/^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỉỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừừữựỳỵỷỹ\s]+$/.test(name)) {
+      hasErrors = true;
+      errors.push("Tên chỉ được chứa chữ cái và khoảng trắng.");
+    }
+  
+    // Kiểm tra ngày sinh (định dạng dd/mm/yyyy) chỉ khi không trống
+    if (dob !== "" && !/^\d{2}\/\d{2}\/\d{4}$/.test(dob)) {
+      hasErrors = true;
+      errors.push("Ngày sinh không đúng định dạng (dd/mm/yyyy).");
+    }
+  
+    // Kiểm tra số điện thoại (chỉ cho phép số) chỉ khi không trống
+    if (phone !== "" && !/^\d+$/.test(phone)) {
+      hasErrors = true;
+      errors.push("Số điện thoại chỉ được chứa số.");
+    }
+  
+    // Kiểm tra địa chỉ (có thể để trống, không cần kiểm tra)
+    if (address === "") {
+      // Nếu địa chỉ trống thì không cần báo lỗi, có thể bỏ qua kiểm tra
+      console.log("Địa chỉ trống, bỏ qua kiểm tra.");
+    }
+  
+    // Nếu có lỗi, hiển thị thông báo và không cho cập nhật
+    if (hasErrors) {
+      Alert.alert("Lỗi nhập liệu", errors.join("\n"));
+      return;
+    }
+  
+    // Nếu không có lỗi, tiếp tục cập nhật thông tin
+    getUserData(auth.currentUser.uid).then(userData => {
       const updates = {};
       let hasChanges = false;
   
-      // Kiểm tra từng trường xem có thay đổi không
-      if (name !== userData.name && name !== '') {
+      if (name !== userData.name && name !== "") {
         updates.name = name;
         hasChanges = true;
       }
-      if (dob !== userData.dob && dob !== '') {
+      if (dob !== userData.dob && dob !== "") {
         updates.dob = dob;
         hasChanges = true;
       }
-      if (phone !== userData.phone && phone !== '') {
+      if (phone !== userData.phone && phone !== "") {
         updates.phone = phone;
         hasChanges = true;
       }
-      if (address !== userData.address && address !== '') {
+      if (address !== userData.address && address !== "") {
         updates.address = address;
         hasChanges = true;
       }
