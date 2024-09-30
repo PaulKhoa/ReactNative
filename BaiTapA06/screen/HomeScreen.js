@@ -12,6 +12,7 @@ const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
 const UserStack = createStackNavigator();
 const FavoriteStack = createStackNavigator(); // Tạo Stack cho Favorites
+const CartStack = createStackNavigator(); // Tạo Stack cho Cart
 
 // HomeStackScreen
 const HomeStackScreen = () => (
@@ -58,6 +59,22 @@ const FavoriteStackScreen = () => (
   </FavoriteStack.Navigator>
 );
 
+// CartStackScreen
+const CartStackScreen = () => (
+  <CartStack.Navigator
+    screenOptions={{
+      headerLeft: () => null, // Bỏ nút quay lại
+    }}
+  >
+    <CartStack.Screen
+      name="CartScreen"
+      component={CartScreen}
+      options={{ title: 'Giỏ Hàng' }}
+    />
+  </CartStack.Navigator>
+);
+
+// Tab Navigator cho HomeScreen
 const HomeScreen = () => {
   return (
     <Tab.Navigator
@@ -96,7 +113,7 @@ const HomeScreen = () => {
       />
       <Tab.Screen
         name="Cart"
-        component={CartScreen}
+        component={CartStackScreen} // Thay đổi thành CartStackScreen
         options={{ title: 'Giỏ Hàng' }}
       />
       <Tab.Screen

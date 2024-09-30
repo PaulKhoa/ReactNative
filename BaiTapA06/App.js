@@ -11,7 +11,6 @@ import ProductManagementScreen from './Admin/ProductManagementScreen'; // Import
 import AddProductScreen from './Admin/AddProductScreen'; // Import AddProductScreen
 import AdminProductDetailsScreen from './Admin/AdminProductDetailsScreen';
 import ProductDetailsScreen from './screen/ProductDetailsScreen'; // Dành cho người dùng
-import FavoritesScreen from './screen/FavoritesScreen'; // Import FavoritesScreen
 import EditProductScreen from './Admin/EditProductScreen'; // Import EditProductScreen
 import SalesManagementScreen from './Admin/SalesManagementScreen';
 
@@ -76,11 +75,6 @@ const App = () => {
           name="AddProductScreen"
           component={AddProductScreen}
           options={{ title: 'Thêm Sản Phẩm' }} // Bạn có thể thay đổi title tùy ý
-        />
-        <Stack.Screen
-          name="FavoritesScreen"
-          component={FavoritesScreen}
-          options={{ title: 'Danh Sách Yêu Thích' }} // Bạn có thể thay đổi title tùy ý
         />
         <Stack.Screen
           name="EditProductScreen"

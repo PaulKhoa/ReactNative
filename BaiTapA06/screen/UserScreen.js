@@ -6,6 +6,7 @@ import { auth, signOut, updateUserData, getUserData } from '../firebase';
 import { sendOTPEmail, generateOTP } from '../otpService';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
+
 const UserScreen = ({ navigation }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState(auth.currentUser?.email || '');

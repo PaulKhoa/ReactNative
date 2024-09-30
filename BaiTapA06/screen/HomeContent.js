@@ -3,19 +3,29 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, Image, Alert } from 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FilterMenu from './FilterMenu'; // Import FilterMenu
 import { getProducts } from '../firebase'; // Import hàm lấy sản phẩm từ firebase.js
+import { auth } from '../firebase'; // Import firebase auth để lấy userId
 import tw from 'tailwind-react-native-classnames';
 
 const HomeContent = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [topProducts, setTopProducts] = useState([]); // State cho sản phẩm bán chạy
+  const [topProducts, setTopProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState('');
   const [brands, setBrands] = useState([]);
   const [sortOrder, setSortOrder] = useState('');
   const [showMenu, setShowMenu] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null); // State để lưu userId
+
+  useEffect(() => {
+    // Lấy userId từ Firebase
+    const user = auth.currentUser;
+    if (user) {
+      setCurrentUserId(user.uid); // Lưu userId vào state
+    }
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -24,7 +34,6 @@ const HomeContent = ({ navigation }) => {
         setProducts(productList);
         setFilteredProducts(productList);
 
-        // Lấy 10 sản phẩm bán chạy nhất
         const sortedProducts = productList
           .sort((a, b) => b.sales - a.sales)
           .slice(0, 10);
@@ -81,7 +90,10 @@ const HomeContent = ({ navigation }) => {
   };
 
   const handleViewDetails = (product) => {
-    navigation.navigate('ProductDetailsScreen', { product });
+    navigation.navigate('ProductDetailsScreen', {
+      product,
+      userId: currentUserId, // Gửi userId đến ProductDetailsScreen
+    });
   };
 
   const renderTopProducts = () => (
@@ -111,7 +123,6 @@ const HomeContent = ({ navigation }) => {
 
   return (
     <View style={tw`flex-1 p-5 bg-gray-100`}>
-      {/* Khu vực tìm kiếm sản phẩm */}
       <View style={tw`flex-row items-center mb-5`}>
         <TouchableOpacity
           style={tw`mr-4`}
@@ -144,13 +155,12 @@ const HomeContent = ({ navigation }) => {
         />
       )}
 
-      {/* Khu vực hiển thị danh sách sản phẩm */}
       <FlatList
         data={filteredProducts}
         numColumns={2}
         keyExtractor={(item) => item.id}
         columnWrapperStyle={tw`justify-between`}
-        ListHeaderComponent={renderTopProducts} // Thêm renderTopProducts vào ListHeaderComponent
+        ListHeaderComponent={renderTopProducts}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={tw`bg-white mb-4 border border-gray-300 rounded-lg p-2 shadow-lg w-1/2`}

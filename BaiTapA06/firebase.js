@@ -163,6 +163,7 @@ export {
   uploadAvatar,
   saveAvatarToDatabase,
   addProduct,
+  database,
   getProducts,
   deleteProduct,
   updateProduct,

@@ -1,20 +1,49 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Dimensions } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import tw from 'tailwind-react-native-classnames';
+import { database } from '../firebase'; // Giả sử bạn đã cấu hình Firebase trong file này
+import { ref, get, set } from 'firebase/database'; // Thêm get từ firebase/database
 
-const ProductDetailsScreen = ({ route, navigation }) => {
-  const { product } = route.params;
+const ProductDetailsScreen = ({ route }) => {
+  const { product, userId } = route.params; // Nhận product và userId từ params
 
   const handleAddToFavorites = () => {
     Alert.alert('Thông báo', 'Sản phẩm đã được thêm vào yêu thích.');
   };
 
-  const handleAddToCart = () => {
-    Alert.alert('Thông báo', 'Sản phẩm đã được thêm vào giỏ hàng.');
-  };
+  const handleAddToCart = async () => {
+    const cartItem = {
+      name: product.name,
+      image: product.image,
+      quantity: 1, // Mặc định số lượng là 1
+      totalPrice: product.price, // Tổng tiền
+    };
 
-  const handleOrder = () => {
-    Alert.alert('Thông báo', 'Đặt hàng thành công.');
+    try {
+      // Xác định đường dẫn đến giỏ hàng của người dùng
+      const cartRef = ref(database, `users/${userId}/cart/${product.id}`);
+      
+      // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+      const snapshot = await get(cartRef);
+      if (snapshot.exists()) {
+        // Nếu sản phẩm đã có trong giỏ hàng, tăng số lượng
+        const existingItem = snapshot.val();
+        existingItem.quantity += 1; // Tăng số lượng lên 2
+        existingItem.totalPrice += product.price; // Cập nhật tổng giá
+
+        // Cập nhật sản phẩm trong giỏ hàng
+        await set(cartRef, existingItem);
+        Alert.alert('Thông báo', 'Số lượng sản phẩm đã được tăng lên.');
+      } else {
+        // Nếu sản phẩm chưa có, thêm sản phẩm mới vào giỏ hàng
+        await set(cartRef, cartItem);
+        Alert.alert('Thông báo', 'Sản phẩm đã được thêm vào giỏ hàng.');
+      }
+    } catch (error) {
+      console.error('Lỗi khi thêm vào giỏ hàng: ', error);
+      Alert.alert('Thông báo', 'Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.');
+    }
   };
 
   const formatPrice = (price) => {
@@ -23,122 +52,46 @@ const ProductDetailsScreen = ({ route, navigation }) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: product.image }} style={styles.image} resizeMode="contain" />
-      </View>
-      <View style={styles.detailsContainer}>
-        <Text style={styles.name}>{product.name}</Text>
-        <Text style={styles.price}>{formatPrice(product.price)}</Text>
-        <Text style={styles.brand}>Hãng: {product.brand}</Text>
-        <Text style={styles.category}>Danh mục: {product.category}</Text>
-        <Text style={styles.description}>{product.description}</Text>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={[styles.button, styles.favoriteButton]} onPress={handleAddToFavorites}>
+    <View style={tw`flex-1`}>
+      <ScrollView contentContainerStyle={tw`p-4 bg-gray-100 pb-20`}>
+        <View style={tw`w-full h-60 bg-white rounded-xl mb-5 justify-center items-center`}>
+          <Image source={{ uri: product.image }} style={tw`w-full h-full rounded-xl`} resizeMode="contain" />
+        </View>
+        <View style={tw`bg-white p-4 rounded-xl shadow-lg`}>
+          <Text style={tw`text-2xl font-bold mb-2 text-gray-800`}>{product.name}</Text>
+          <Text style={tw`text-2xl font-bold mb-2 text-red-600`}>{formatPrice(product.price)}</Text>
+          <Text style={tw`text-lg font-bold mb-2 text-gray-600`}>Hãng: {product.brand}</Text>
+          <Text style={tw`text-lg font-bold mb-4 text-gray-600`}>Danh mục: {product.category}</Text>
+          <Text style={tw`text-base mb-6 text-gray-600 text-justify`}>{product.description}</Text>
+        </View>
+      </ScrollView>
+      <View style={tw`absolute bottom-0 left-0 right-0 bg-white p-4 shadow-lg border-t border-gray-200`}>
+        <View style={tw`flex-row justify-between`}>
+          <TouchableOpacity
+            style={tw`flex-row items-center bg-red-500 py-3 px-4 rounded-lg flex-1 mx-1 justify-center`}
+            onPress={handleAddToFavorites}
+          >
             <Icon name="favorite-border" size={24} color="#FFF" />
-            <Text style={styles.buttonText}>Thêm vào yêu thích</Text>
+            <Text style={tw`text-white text-lg font-semibold ml-2`}>Yêu thích</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.cartButton]} onPress={handleAddToCart}>
+          <TouchableOpacity
+            style={tw`flex-row items-center bg-yellow-500 py-3 px-4 rounded-lg flex-1 mx-1 justify-center`}
+            onPress={handleAddToCart}
+          >
             <Icon name="shopping-cart" size={24} color="#FFF" />
-            <Text style={styles.buttonText}>Thêm vào giỏ hàng</Text>
+            <Text style={tw`text-white text-lg font-semibold ml-2`}>Giỏ hàng</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.orderButton]} onPress={handleOrder}>
+          <TouchableOpacity
+            style={tw`flex-row items-center bg-green-500 py-3 px-4 rounded-lg flex-1 mx-1 justify-center`}
+            onPress={() => Alert.alert('Thông báo', 'Đặt hàng thành công.')}
+          >
             <Icon name="shopping-bag" size={24} color="#FFF" />
-            <Text style={styles.buttonText}>Đặt hàng</Text>
+            <Text style={tw`text-white text-lg font-semibold ml-2`}>Đặt hàng</Text>
           </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 16,
-    backgroundColor: '#FAFAFA',
-  },
-  imageContainer: {
-    width: '100%',
-    height: Dimensions.get('window').width * 0.6, // Tạo kích thước container tỉ lệ 16:9
-    marginBottom: 20,
-    borderRadius: 10,
-    backgroundColor: '#FFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  detailsContainer: {
-    backgroundColor: '#FFF',
-    padding: 16,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  price: {
-    fontSize: 24, // Tăng kích thước chữ giá
-    color: '#FF5722', // Màu sắc nổi bật cho giá
-    marginBottom: 10,
-    fontWeight: '700', // Đậm hơn cho giá
-  },
-  brand: {
-    fontSize: 19,
-    color: '#666',
-    marginBottom: 8,
-  },
-  category: {
-    fontSize: 19,
-    color: '#666',
-    marginBottom: 12,
-  },
-  description: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 20,
-    textAlign: 'justify',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    elevation: 2,
-    flex: 1,
-    marginHorizontal: 5,
-    justifyContent: 'center',
-  },
-  favoriteButton: {
-    backgroundColor: '#F44336',
-  },
-  cartButton: {
-    backgroundColor: '#FF9800',
-  },
-  orderButton: {
-    backgroundColor: '#4CAF50',
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    marginLeft: 8,
-    fontWeight: '600',
-  },
-});
 
 export default ProductDetailsScreen;
