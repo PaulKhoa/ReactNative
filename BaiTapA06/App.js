@@ -5,7 +5,6 @@ import RegisterScreen from './screen/RegisterScreen';
 import LoginScreen from './screen/LoginScreen';
 import HomeScreen from './screen/HomeScreen';
 import ForgetPasswordScreen from './screen/ForgetPasswordScreen';
-import UserScreen from './screen/UserScreen'; // Import UserScreen
 import AdminPage from './Admin/AdminPage';   // Import AdminPage
 import ProductManagementScreen from './Admin/ProductManagementScreen'; // Import ProductManagementScreen
 import AddProductScreen from './Admin/AddProductScreen'; // Import AddProductScreen
@@ -45,11 +44,6 @@ const App = () => {
           name="ForgetPassword"
           component={ForgetPasswordScreen}
           options={{ title: 'Quên Mật Khẩu' }}
-        />
-        <Stack.Screen
-          name="UserScreen"
-          component={UserScreen}
-          options={{ headerShown: false }}  
         />
         <Stack.Screen
           name="AdminPage"

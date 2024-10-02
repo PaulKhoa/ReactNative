@@ -34,7 +34,7 @@ const CartScreen = ({ navigation }) => {
           // Tính tổng giá cho từng sản phẩm
           items.push({ id: childSnapshot.key, ...item });
           if (selectedItems[childSnapshot.key]) {
-            total += price * item.quantity; // Cộng dồn nếu sản phẩm được chọn
+            total += price; // Cộng dồn nếu sản phẩm được chọn
           }
         });
         setCartItems(items);
@@ -54,9 +54,22 @@ const CartScreen = ({ navigation }) => {
 
   const handleQuantityChange = async (itemId, newQuantity) => {
     if (newQuantity < 1) return; // Không cho phép số lượng nhỏ hơn 1
+  
+    // Tìm sản phẩm có itemId trong giỏ hàng
+    const item = cartItems.find((product) => product.id === itemId);
+    if (!item) return;
+  
+    // Tính giá ban đầu của sản phẩm (totalPrice hiện tại chia cho số lượng hiện tại)
+    const originalPrice = item.totalPrice / item.quantity;
+  
+    // Tính lại tổng giá cho sản phẩm dựa trên giá ban đầu và số lượng mới
+    const updatedTotalPrice = originalPrice * newQuantity;
+  
+    // Cập nhật số lượng và tổng giá vào Firebase
     const itemRef = ref(database, `users/${userId}/cart/${itemId}`);
-    await update(itemRef, { quantity: newQuantity }); // Cập nhật số lượng
+    await update(itemRef, { quantity: newQuantity, totalPrice: updatedTotalPrice }); // Cập nhật số lượng và giá mới
   };
+  
 
   const handleSelectItem = (itemId) => {
     setSelectedItems((prev) => ({
@@ -87,7 +100,7 @@ const CartScreen = ({ navigation }) => {
                 <View style={tw`flex-1 ml-4`}>
                   <Text style={tw`text-sm font-bold`}>{item.name}</Text>
                   <Text style={tw`text-yellow-600 text-lg font-bold`}>
-                    {formatPrice(item.totalPrice * item.quantity)}
+                    {formatPrice(item.totalPrice)}
                   </Text>
                   <View style={tw`flex-row items-center mt-2`}>
                     <TouchableOpacity onPress={() => handleQuantityChange(item.id, item.quantity - 1)}>
