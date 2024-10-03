@@ -7,12 +7,14 @@ import HomeContent from './HomeContent';
 import FavoritesScreen from './FavoritesScreen';
 import CartScreen from './CartScreen';
 import OrderScreen from './OrderScreen'; // Import OrderScreen
+import OrderConfirmationScreen from './OrderConfirmationScreen'; // Import OrderConfirmationScreen
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
 const UserStack = createStackNavigator();
 const FavoriteStack = createStackNavigator(); // Tạo Stack cho Favorites
 const CartStack = createStackNavigator(); // Tạo Stack cho Cart
+const OrderStack = createStackNavigator(); // Tạo Stack cho Order
 
 // HomeStackScreen
 const HomeStackScreen = () => (
@@ -71,7 +73,27 @@ const CartStackScreen = () => (
       component={CartScreen}
       options={{ title: 'Giỏ Hàng' }}
     />
+    <CartStack.Screen
+      name="OrderConfirmation" // Định nghĩa route cho OrderConfirmationScreen
+      component={OrderConfirmationScreen}
+      options={{ title: 'Xác Nhận Đơn Hàng' }} // Tiêu đề cho màn hình xác nhận
+    />
   </CartStack.Navigator>
+);
+
+// OrderStackScreen
+const OrderStackScreen = () => (
+  <OrderStack.Navigator
+    screenOptions={{
+      headerLeft: () => null, // Bỏ nút quay lại
+    }}
+  >
+    <OrderStack.Screen
+      name="OrderScreen"
+      component={OrderScreen}
+      options={{ title: 'Đơn Hàng' }} // Tiêu đề cho OrderScreen
+    />
+  </OrderStack.Navigator>
 );
 
 // Tab Navigator cho HomeScreen
@@ -118,7 +140,7 @@ const HomeScreen = () => {
       />
       <Tab.Screen
         name="Order"
-        component={OrderScreen} // Thêm OrderScreen vào Tab Navigator
+        component={OrderStackScreen} // Sử dụng OrderStackScreen cho Order
         options={{ title: 'Đơn Hàng' }}
       />
       <Tab.Screen

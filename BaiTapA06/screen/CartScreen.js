@@ -69,7 +69,6 @@ const CartScreen = ({ navigation }) => {
     const itemRef = ref(database, `users/${userId}/cart/${itemId}`);
     await update(itemRef, { quantity: newQuantity, totalPrice: updatedTotalPrice }); // Cập nhật số lượng và giá mới
   };
-  
 
   const handleSelectItem = (itemId) => {
     setSelectedItems((prev) => ({
@@ -77,6 +76,25 @@ const CartScreen = ({ navigation }) => {
       [itemId]: !prev[itemId], // Chuyển đổi trạng thái chọn
     }));
   };
+
+  const handlePlaceOrder = () => {
+    // Kiểm tra nếu không có sản phẩm nào được chọn
+    const hasSelectedItems = Object.values(selectedItems).includes(true);
+  
+    if (!hasSelectedItems) {
+      Alert.alert('Thông báo', 'Vui lòng chọn ít nhất một sản phẩm để đặt hàng.');
+      return;
+  }
+  
+    // Chuyển đổi selectedItems từ trạng thái thành một đối tượng để truyền qua navigation
+    const itemsToOrder = cartItems.filter(item => selectedItems[item.id]);
+  
+    navigation.navigate('OrderConfirmation', {
+      selectedItems: itemsToOrder, // Truyền thông tin sản phẩm đã chọn
+      totalPrice,
+    });
+  };
+  
 
   return (
     <View style={tw`flex-1 bg-gray-100 p-4`}>
@@ -122,10 +140,10 @@ const CartScreen = ({ navigation }) => {
           <View style={tw`flex-1 justify-center items-center`}>
             <Icon name="shopping-cart" size={40} color="orange" />
             <Text style={tw`text-center text-lg font-bold text-blue-600 mt-2`}>
-            Giỏ hàng chưa có sản phẩm nào! 
+              Giỏ hàng chưa có sản phẩm nào! 
             </Text>
             <Text style={tw`text-center text-base text-gray-500`}>
-            Mua sắm ngay để không bỏ lỡ!
+              Mua sắm ngay để không bỏ lỡ!
             </Text>
           </View>
         )}
@@ -134,7 +152,7 @@ const CartScreen = ({ navigation }) => {
         <Text style={tw`text-lg font-bold`}>Tổng cộng: {formatPrice(totalPrice)}</Text>
         <TouchableOpacity
           style={tw`bg-green-500 py-3 rounded-lg mt-2 flex-row items-center justify-center`}
-          onPress={() => Alert.alert('Thông báo', 'Chức năng đặt hàng sẽ được triển khai sau.')}
+          onPress={handlePlaceOrder} // Gọi hàm khi nhấn nút
         >
           <Icon name="assignment" size={24} color="white" />
           <Text style={tw`text-white text-center text-xl font-semibold ml-2`}>Đặt hàng</Text>

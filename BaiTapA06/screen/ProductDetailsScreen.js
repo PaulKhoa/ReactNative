@@ -34,7 +34,7 @@ const ProductDetailsScreen = ({ route }) => {
 
         // Cập nhật sản phẩm trong giỏ hàng
         await set(cartRef, existingItem);
-        Alert.alert('Thông báo', 'Số lượng sản phẩm đã được tăng lên.');
+        Alert.alert('Thông báo', 'Đã cập nhật số lượng sản phẩm trong giỏ hàng');
       } else {
         // Nếu sản phẩm chưa có, thêm sản phẩm mới vào giỏ hàng
         await set(cartRef, cartItem);

@@ -4,8 +4,6 @@ import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { auth, signOut, updateUserData, getUserData } from '../firebase';
 import { sendOTPEmail, generateOTP } from '../otpService';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-
 
 const UserScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -46,6 +44,18 @@ const UserScreen = ({ navigation }) => {
     loadUserData();
   }, []);
 
+  // Ràng buộc ký tự tên (chỉ cho phép chữ cái, khoảng trắng, và dấu tiếng Việt)
+  const validateName = (text) => {
+    const nameRegex = /^[A-Za-zÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂƠƯăâêôơư ]+$/;
+    return nameRegex.test(text);
+  };
+
+  // Kiểm tra định dạng ngày sinh: DD/MM/YYYY
+  const validateDob = (date) => {
+    const dateRegex = /^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[012])\/\d{4}$/;
+    return dateRegex.test(date);
+  };
+
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -53,43 +63,11 @@ const UserScreen = ({ navigation }) => {
       aspect: [4, 3],
       quality: 1,
     });
-  
-    if (!result.canceled) {
-      const imageUri = result.assets[0].uri;
-      setAvatar(imageUri); // Hiển thị ảnh ngay lập tức vào khung tròn
-      await handleUploadImage(imageUri); // Upload ảnh lên Firebase
-    }
-  };
 
-  const handleUploadImage = async (uri) => {
-    const userId = auth.currentUser?.uid;
-    if (!userId) return;
-  
-    const response = await fetch(uri);
-    const blob = await response.blob();
-  
-    const storage = getStorage();
-    const storageRef = ref(storage, `avatars/${userId}`);
-  
-    try {
-      await uploadBytes(storageRef, blob);
-      const downloadURL = await getDownloadURL(storageRef);
-  
-      // Cập nhật URL vào database mà không làm mất thông tin khác
-      const updates = {
-        avatar: downloadURL,
-        name: oldData.name, // Giữ nguyên các thông tin khác
-        dob: oldData.dob,
-        phone: oldData.phone,
-        address: oldData.address,
-      };
-      
-      await updateUserData(userId, updates); // Cập nhật tất cả các trường
-    } catch (error) {
-      console.error('Lỗi khi upload ảnh:', error);
+    if (!result.canceled) {
+      setAvatar(result.assets[0].uri);
     }
   };
-  
 
   const handleSendOtp = async () => {
     const otp = generateOTP();
@@ -103,123 +81,78 @@ const UserScreen = ({ navigation }) => {
   };
 
   const handleUpdateInfo = () => {
-    let hasErrors = false;
-    const errors = [];
-  
-    // Kiểm tra tên (cho phép dấu tiếng Việt)
-    if (name !== "" && !/^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỉỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừừữựỳỵỷỹ\s]+$/.test(name)) {
-      hasErrors = true;
-      errors.push("Tên chỉ được chứa chữ cái và khoảng trắng.");
-    }
-  
-    // Kiểm tra ngày sinh (định dạng dd/mm/yyyy) chỉ khi không trống
-    if (dob !== "" && !/^\d{2}\/\d{2}\/\d{4}$/.test(dob)) {
-      hasErrors = true;
-      errors.push("Ngày sinh không đúng định dạng (dd/mm/yyyy).");
-    }
-  
-    // Kiểm tra số điện thoại (chỉ cho phép số) chỉ khi không trống
-    if (phone !== "" && !/^\d+$/.test(phone)) {
-      hasErrors = true;
-      errors.push("Số điện thoại chỉ được chứa số.");
-    }
-  
-    // Kiểm tra địa chỉ (có thể để trống, không cần kiểm tra)
-    if (address === "") {
-      // Nếu địa chỉ trống thì không cần báo lỗi, có thể bỏ qua kiểm tra
-      console.log("Địa chỉ trống, bỏ qua kiểm tra.");
-    }
-  
-    // Nếu có lỗi, hiển thị thông báo và không cho cập nhật
-    if (hasErrors) {
-      Alert.alert("Lỗi nhập liệu", errors.join("\n"));
+    if (!validateName(name)) {
+      Alert.alert('Lỗi', 'Tên không hợp lệ. Vui lòng chỉ nhập ký tự chữ và khoảng trắng.');
       return;
     }
-  
-    // Nếu không có lỗi, tiếp tục cập nhật thông tin
-    getUserData(auth.currentUser.uid).then(userData => {
-      const updates = {};
-      let hasChanges = false;
-  
-      if (name !== userData.name && name !== "") {
-        updates.name = name;
-        hasChanges = true;
+
+    if (!validateDob(dob)) {
+      Alert.alert('Lỗi', 'Ngày sinh không đúng định dạng (DD/MM/YYYY).');
+      return;
+    }
+
+    const userId = auth.currentUser?.uid;
+    if (!userId) return;
+
+    getUserData(userId).then((userData) => {
+      const changes = {
+        name: name !== userData.name,
+        dob: dob !== userData.dob,
+        phone: phone !== userData.phone,
+        address: address !== userData.address,
+        avatar: avatar !== userData.avatar,
+      };
+
+      // Nếu không có thay đổi nào, hiển thị thông báo
+      if (!Object.values(changes).some((change) => change)) {
+        Alert.alert('Thông báo', 'Không có thay đổi nào để cập nhật.');
+        return;
       }
-      if (dob !== userData.dob && dob !== "") {
-        updates.dob = dob;
-        hasChanges = true;
-      }
-      if (phone !== userData.phone && phone !== "") {
-        updates.phone = phone;
-        hasChanges = true;
-      }
-      if (address !== userData.address && address !== "") {
-        updates.address = address;
-        hasChanges = true;
-      }
-  
-      // Nếu có thay đổi, yêu cầu xác thực
-      if (hasChanges) {
-        Alert.alert(
-          'Xác nhận',
-          'Bạn có chắc muốn lưu các thay đổi?',
-          [
-            {
-              text: 'Hủy',
-              style: 'cancel',
-              onPress: () => {
-                // Khôi phục dữ liệu cũ khi hủy bỏ
-                setName(oldData.name);
-                setDob(oldData.dob);
-                setPhone(oldData.phone);
-                setAddress(oldData.address);
-                setAvatar(oldData.avatar);
-                setEditModalVisible(false);
-              },
+
+      // Nếu có thay đổi, hiển thị xác nhận
+      Alert.alert(
+        'Xác nhận',
+        'Bạn có chắc muốn lưu các thay đổi?',
+        [
+          {
+            text: 'Hủy',
+            style: 'cancel',
+            onPress: () => {
+              // Khôi phục dữ liệu cũ khi hủy bỏ
+              setName(oldData.name);
+              setDob(oldData.dob);
+              setPhone(oldData.phone);
+              setAddress(oldData.address);
+              setAvatar(oldData.avatar);
+              setEditModalVisible(false);
             },
-            {
-              text: 'Lưu',
-              onPress: () => {
-                handleSendOtp(); // Gửi OTP
-                setEditModalVisible(true);
-              },
+          },
+          {
+            text: 'Lưu',
+            onPress: () => {
+              handleSendOtp();
+              setEditModalVisible(true);
             },
-          ]
-        );
-      } else {
-        Alert.alert('Thông báo', 'Không có thay đổi nào để lưu.');
-      }
+          },
+        ]
+      );
     });
   };
-  
 
   const handleConfirmUpdate = async () => {
     if (otp !== generatedOtp) {
       Alert.alert('Lỗi', 'Mã OTP không đúng!');
       return;
     }
-  
+
     const userId = auth.currentUser?.uid;
     try {
       if (!userId) throw new Error('Người dùng chưa đăng nhập');
-  
-      // Chỉ cập nhật các trường đã thay đổi
-      const updates = {};
-      if (name !== oldData.name) updates.name = name;
-      if (dob !== oldData.dob) updates.dob = dob;
-      if (phone !== oldData.phone) updates.phone = phone;
-      if (address !== oldData.address) updates.address = address;
-  
-      // Cập nhật avatar nếu đã thay đổi
-      if (avatar !== oldData.avatar) {
-        updates.avatar = avatar; // Cập nhật URL avatar
-      }
-  
-      await updateUserData(userId, updates); // Cập nhật các trường đã thay đổi
+
+      await updateUserData(userId, { name, dob, phone, address, avatar });
       Alert.alert('Thông báo', 'Cập nhật thông tin thành công!');
       setEditModalVisible(false);
-  
-      // Tải lại dữ liệu người dùng
+
       const userData = await getUserData(userId);
       setOldData({
         name: userData.name || '',
@@ -237,7 +170,6 @@ const UserScreen = ({ navigation }) => {
       Alert.alert('Lỗi', 'Không thể cập nhật thông tin.');
     }
   };
-  
 
   const handleSignOut = () => {
     signOut(auth)
@@ -308,6 +240,7 @@ const UserScreen = ({ navigation }) => {
             style={styles.input}
             placeholder="Số điện thoại"
             value={phone}
+            keyboardType="number-pad"
             onChangeText={setPhone}
           />
         </View>
