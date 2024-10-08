@@ -131,7 +131,7 @@ const OrderConfirmationScreen = ({ route, navigation }) => {
       </ScrollView>
 
       <View style={tw`absolute bottom-0 left-0 right-0 p-4 bg-white rounded-t-lg shadow`}>
-        <Text style={tw`text-lg font-bold`}>Tổng cộng: {formatPrice(totalPrice)}</Text>
+        <Text style={tw`text-xl text-blue-600 font-bold`}>Tổng cộng: {formatPrice(totalPrice)}</Text>
         <TouchableOpacity
           style={tw`bg-green-500 py-3 rounded-lg mt-2 flex-row items-center justify-center`}
           onPress={handleConfirmOrder}
@@ -143,7 +143,7 @@ const OrderConfirmationScreen = ({ route, navigation }) => {
           style={tw`bg-red-500 py-3 rounded-lg mt-2 flex-row items-center justify-center`}
           onPress={() => navigation.goBack()} // Quay lại màn hình giỏ hàng
         >
-          <Icon name="cancel" size={24} color="white" />
+          <Icon name="arrow-back" size={24} color="white" />
           <Text style={tw`text-white text-center text-xl font-semibold ml-2`}>Quay lại</Text>
         </TouchableOpacity>
       </View>

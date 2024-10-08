@@ -149,7 +149,7 @@ const CartScreen = ({ navigation }) => {
         )}
       </ScrollView>
       <View style={tw`bg-white p-4 rounded-lg shadow mt-4`}>
-        <Text style={tw`text-lg font-bold`}>Tổng cộng: {formatPrice(totalPrice)}</Text>
+        <Text style={tw`text-xl text-blue-600 font-bold`}>Tổng cộng: {formatPrice(totalPrice)}</Text>
         <TouchableOpacity
           style={tw`bg-green-500 py-3 rounded-lg mt-2 flex-row items-center justify-center`}
           onPress={handlePlaceOrder} // Gọi hàm khi nhấn nút
