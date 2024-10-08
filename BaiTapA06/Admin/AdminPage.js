@@ -37,10 +37,14 @@ const AdminPage = ({ navigation }) => {
       </TouchableOpacity>
 
       {/* Section for Order Management */}
-      <TouchableOpacity style={tw`flex-row items-center bg-white p-4 mb-3 rounded-lg shadow`}>
-        <Icon name="shopping-cart" size={30} color="#2196F3" />
+      <TouchableOpacity
+        style={tw`flex-row items-center bg-white p-4 mb-3 rounded-lg shadow`}
+        onPress={() => navigation.navigate('OrderManagementScreen')} // Điều hướng đến màn hình Quản lý đơn hàng
+      >
+        <Icon name="assignment" size={30} color="#2196F3" />
         <Text style={tw`ml-4 text-lg text-gray-800`}>Quản lý đơn hàng</Text>
       </TouchableOpacity>
+
 
       {/* New Section for Sales Management */}
       <TouchableOpacity 

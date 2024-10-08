@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { FontAwesome } from '@expo/vector-icons';
 import UserScreen from './UserScreen';
 import HomeContent from './HomeContent';
+import ProductDetailsScreen from './ProductDetailsScreen'; // Import ProductDetailsScreen
 import FavoritesScreen from './FavoritesScreen';
 import CartScreen from './CartScreen';
 import OrderScreen from './OrderScreen'; // Import OrderScreen
@@ -27,6 +28,11 @@ const HomeStackScreen = () => (
       name="HomeContent"
       component={HomeContent}
       options={{ title: 'Trang Chủ' }}
+    />
+    <HomeStack.Screen
+      name="ProductDetails" // Thêm route cho ProductDetailsScreen
+      component={ProductDetailsScreen}
+      options={{ title: 'Chi Tiết Sản Phẩm' }} // Tiêu đề cho màn hình chi tiết sản phẩm
     />
   </HomeStack.Navigator>
 );

@@ -5,14 +5,13 @@ import RegisterScreen from './screen/RegisterScreen';
 import LoginScreen from './screen/LoginScreen';
 import HomeScreen from './screen/HomeScreen';
 import ForgetPasswordScreen from './screen/ForgetPasswordScreen';
-import AdminPage from './Admin/AdminPage';   // Import AdminPage
-import ProductManagementScreen from './Admin/ProductManagementScreen'; // Import ProductManagementScreen
-import AddProductScreen from './Admin/AddProductScreen'; // Import AddProductScreen
+import AdminPage from './Admin/AdminPage';   
+import ProductManagementScreen from './Admin/ProductManagementScreen';
+import AddProductScreen from './Admin/AddProductScreen'; 
 import AdminProductDetailsScreen from './Admin/AdminProductDetailsScreen';
-import ProductDetailsScreen from './screen/ProductDetailsScreen'; // Dành cho người dùng
-import EditProductScreen from './Admin/EditProductScreen'; // Import EditProductScreen
+import EditProductScreen from './Admin/EditProductScreen';
 import SalesManagementScreen from './Admin/SalesManagementScreen';
-
+import OrderManagementScreen from './Admin/OrderManagementScreen'; // Import OrderManagementScreen
 
 const Stack = createStackNavigator();
 
@@ -48,7 +47,7 @@ const App = () => {
         <Stack.Screen
           name="AdminPage"
           component={AdminPage}
-          options={{ title: 'Trang Quản Trị' }} // Bạn có thể thay đổi title tùy ý
+          options={{ title: 'Trang Quản Trị' }} 
         />
         <Stack.Screen
           name="ProductManagementScreen"
@@ -61,24 +60,24 @@ const App = () => {
           options={{ title: 'Chi Tiết Sản Phẩm' }}  
         />
         <Stack.Screen
-          name="ProductDetailsScreen"
-          component={ProductDetailsScreen}
-          options={{ title: 'Chi Tiết Sản Phẩm' }}  
-        />
-        <Stack.Screen
           name="AddProductScreen"
           component={AddProductScreen}
-          options={{ title: 'Thêm Sản Phẩm' }} // Bạn có thể thay đổi title tùy ý
+          options={{ title: 'Thêm Sản Phẩm' }} 
         />
         <Stack.Screen
           name="EditProductScreen"
           component={EditProductScreen}
-          options={{ title: 'Chỉnh Sửa Sản Phẩm' }} // Bạn có thể thay đổi title tùy ý
+          options={{ title: 'Chỉnh Sửa Sản Phẩm' }} 
         />
         <Stack.Screen
           name="SalesManagementScreen"
           component={SalesManagementScreen}
-          options={{ title: 'Quản Lý Doanh Số' }} // Bạn có thể thay đổi title tùy ý
+          options={{ title: 'Quản Lý Doanh Số' }} 
+        />
+        <Stack.Screen
+          name="OrderManagementScreen"
+          component={OrderManagementScreen}
+          options={{ title: 'Quản Lý Đơn Hàng' }} // Đăng ký OrderManagementScreen
         />
       </Stack.Navigator>
     </NavigationContainer>

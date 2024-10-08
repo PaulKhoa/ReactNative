@@ -90,7 +90,7 @@ const HomeContent = ({ navigation }) => {
   };
 
   const handleViewDetails = (product) => {
-    navigation.navigate('ProductDetailsScreen', {
+    navigation.navigate('ProductDetails', {
       product,
       userId: currentUserId, // Gửi userId đến ProductDetailsScreen
     });
