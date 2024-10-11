@@ -1,12 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Alert, ActivityIndicator, Image, Button } from 'react-native';
+import { View, Text, ScrollView, Alert, ActivityIndicator, Image, Button, TouchableOpacity } from 'react-native';
 import tw from 'tailwind-react-native-classnames';
-import { auth, database } from '../firebase'; // Import Firebase
+import { auth, database } from '../firebase';
 import { ref, onValue, update } from 'firebase/database';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const OrderScreen = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedStatus, setSelectedStatus] = useState('Tất cả đơn hàng');
+
+  const statuses = [
+    { title: 'Đang xử lý', icon: 'pending', filterValue: 'Đang xử lý' },
+    { title: 'Đã xác nhận', icon: 'check-circle-outline', filterValue: 'Đã xác nhận đơn hàng' },
+    { title: 'Đang chuẩn bị', icon: 'store', filterValue: 'Shop đang chuẩn bị đơn hàng' },
+    { title: 'Đang giao hàng', icon: 'local-shipping', filterValue: 'Đang giao hàng' },
+    { title: 'Đã giao hàng', icon: 'done-all', filterValue: 'Đã giao thành công' },
+    { title: 'Đã hủy đơn', icon: 'cancel', filterValue: 'Đã hủy' },
+  ];
 
   useEffect(() => {
     const userId = auth.currentUser ? auth.currentUser.uid : null;
@@ -29,7 +40,6 @@ const OrderScreen = () => {
           setLoading(false);
         },
         (error) => {
-          //Alert.alert('Lỗi', 'Không thể tải đơn hàng.');
           setLoading(false);
         }
       );
@@ -38,7 +48,14 @@ const OrderScreen = () => {
     }
   }, []);
 
-  // Hàm hủy đơn hàng
+  const filterOrders = () => {
+    if (selectedStatus === 'Tất cả đơn hàng') {
+      return orders;
+    }
+    const selectedStatusObj = statuses.find(status => status.title === selectedStatus);
+    return orders.filter((order) => order.status === selectedStatusObj.filterValue);
+  };
+
   const handleCancelOrder = (orderId) => {
     Alert.alert(
       'Xác nhận',
@@ -50,13 +67,10 @@ const OrderScreen = () => {
           onPress: () => {
             const userId = auth.currentUser ? auth.currentUser.uid : null;
             if (userId) {
-              // Đường dẫn đến đơn hàng cụ thể trong Firebase
               const orderRef = ref(database, `users/${userId}/orders/${orderId}`);
-              // Cập nhật trạng thái đơn hàng thành "Đã hủy"
               update(orderRef, { status: 'Đã hủy' })
                 .then(() => {
                   Alert.alert('Thành công', 'Đơn hàng đã được hủy.');
-                  // Cập nhật lại danh sách đơn hàng
                   setOrders((prevOrders) =>
                     prevOrders.map((order) =>
                       order.id === orderId ? { ...order, status: 'Đã hủy' } : order
@@ -74,60 +88,85 @@ const OrderScreen = () => {
     );
   };
 
+  const renderIcon = (status) => {
+    const ordersCount = orders.filter((order) => order.status === status.filterValue).length;
+    return (
+      <TouchableOpacity
+        key={status.title}
+        onPress={() => setSelectedStatus(status.title)}
+        style={tw`flex items-center mx-2`}
+      >
+        <View style={tw`relative`}>
+          <Icon name={status.icon} size={40} color={selectedStatus === status.title ? 'blue' : 'gray'} />
+          {ordersCount > 0 && (
+            <View style={tw`absolute -top-0 -right-2 bg-red-600 rounded-full w-6 h-6 flex items-center justify-center`}>
+              <Text style={tw`text-white text-xs`}>{ordersCount}</Text>
+            </View>
+          )}
+        </View>
+        <Text style={tw`text-center mt-1 text-sm`}>{status.title}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={tw`flex-1 bg-gray-100 p-4`}>
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
-        <ScrollView>
-          {orders.length === 0 ? (
-            <Text style={tw`text-lg text-center text-gray-600`}>Bạn chưa có đơn hàng nào.</Text>
-          ) : (
-            orders.map((order) => (
-              <View key={order.id} style={tw`bg-white rounded-lg shadow-md p-4 mb-4`}>
-                <Text style={tw`text-base font-bold text-blue-600`}>Đơn hàng ID: {order.id}</Text>
-                <Text style={tw`text-base font-bold`}>Thời gian: {order.orderTime}</Text>
-                <Text style={tw`text-base font-bold text-green-600`}>Tổng cộng: {formatPrice(order.totalAmount)}</Text>
-                <Text style={tw`text-base font-bold`}>Hình thức thanh toán: {order.paymentMethod}</Text>
-                <Text style={tw`text-base font-bold text-red-500`}>Trạng thái: {order.status}</Text>
+        <>
+          {/* Thanh trạng thái với các icon */}
+          <View style={tw`h-24 mb-4`}>
+            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={tw`mt-4`} contentContainerStyle={tw`flex-row justify-between`}>
+              {statuses.map((status) => renderIcon(status))}
+            </ScrollView>
+          </View>
 
+          {/* Danh sách đơn hàng */}
+          <ScrollView style={tw`flex-1`}>
+            {filterOrders().length === 0 ? (
+              <Text style={tw`text-lg text-center text-gray-600`}>Không có đơn hàng với trạng thái "{selectedStatus}".</Text>
+            ) : (
+              filterOrders().map((order) => (
+                <View key={order.id} style={tw`bg-white rounded-lg shadow-md p-4 mb-4`}>
+                  <Text style={tw`text-base font-bold text-blue-600`}>Đơn hàng ID: {order.id}</Text>
+                  <Text style={tw`text-base font-bold`}>Thời gian: {order.orderTime}</Text>
+                  <Text style={tw`text-base font-bold text-green-600`}>Tổng cộng: {formatPrice(order.totalAmount)}</Text>
+                  <Text style={tw`text-base font-bold`}>Hình thức thanh toán: {order.paymentMethod}</Text>
+                  <Text style={tw`text-base font-bold text-red-500`}>Trạng thái: {order.status}</Text>
 
-                <Text style={tw`text-lg font-bold mt-2`}>Sản phẩm:</Text>
-                {order.items.map((item, index) => (
-                  <View key={index} style={tw`flex-row items-center mt-1 border-b border-gray-300 py-2`}>
-                    {item.image && (
-                      <Image
-                        source={{ uri: item.image }}
-                        style={tw`w-16 h-16 rounded-md mr-2`}
-                      />
-                    )}
-                    <View style={tw`flex-1`}>
-                      <Text style={tw`text-base`}>{item.name} x {item.quantity}</Text>
-                      <Text style={tw`text-base font-bold text-yellow-600`}>{formatPrice(item.totalPrice)}</Text>
+                  <Text style={tw`text-lg font-bold mt-2`}>Sản phẩm:</Text>
+                  {order.items.map((item, index) => (
+                    <View key={index} style={tw`flex-row items-center mt-1 border-b border-gray-300 py-2`}>
+                      {item.image && (
+                        <Image source={{ uri: item.image }} style={tw`w-16 h-16 rounded-md mr-2`} />
+                      )}
+                      <View style={tw`flex-1`}>
+                        <Text style={tw`text-base`}>{item.name} x {item.quantity}</Text>
+                        <Text style={tw`text-base font-bold text-yellow-600`}>{formatPrice(item.totalPrice)}</Text>
+                      </View>
                     </View>
-                  </View>
-                ))}
+                  ))}
 
-                {/* Nút Hủy đơn hàng */}
-                {order.status === 'Đang xử lý' && (
-                  <View style={tw`mt-2`}>
-                    <Button
-                      title="Hủy đơn hàng"
-                      color="red"
-                      onPress={() => handleCancelOrder(order.id)}
-                    />
-                  </View>
-                )}
-              </View>
-            ))
-          )}
-        </ScrollView>
+                  {order.status === 'Đang xử lý' && (
+                    <View style={tw`mt-2`}>
+                      <Button
+                        title="Hủy đơn hàng"
+                        color="red"
+                        onPress={() => handleCancelOrder(order.id)}
+                      />
+                    </View>
+                  )}
+                </View>
+              ))
+            )}
+          </ScrollView>
+        </>
       )}
     </View>
   );
 };
 
-// Hàm định dạng giá
 const formatPrice = (price) => {
   if (price === undefined || price === null) return '';
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' VNĐ';

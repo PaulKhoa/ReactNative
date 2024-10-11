@@ -8,9 +8,27 @@ import { ref, get, set } from 'firebase/database'; // Thêm get từ firebase/da
 const ProductDetailsScreen = ({ route }) => {
   const { product, userId } = route.params; // Nhận product và userId từ params
 
-  const handleAddToFavorites = () => {
-    Alert.alert('Thông báo', 'Sản phẩm đã được thêm vào yêu thích.');
-  };
+  const handleAddToFavorites = async () => {
+    const favoriteItem = {
+        image: product.image,
+        name: product.name,
+        price: product.price,
+    };
+
+    try {
+        // Xác định đường dẫn đến danh sách yêu thích của người dùng
+        const favoritesRef = ref(database, `users/${userId}/favorites/${product.id}`); 
+
+        // Thêm sản phẩm vào danh sách yêu thích
+        await set(favoritesRef, favoriteItem);
+
+        Alert.alert('Thông báo', 'Sản phẩm đã được thêm vào danh sách yêu thích.');
+    } catch (error) {
+        console.error('Lỗi khi thêm vào yêu thích: ', error);
+        Alert.alert('Thông báo', 'Đã xảy ra lỗi khi thêm sản phẩm vào danh sách yêu thích.');
+    }
+};
+
 
   const handleAddToCart = async () => {
     const cartItem = {
@@ -59,7 +77,7 @@ const ProductDetailsScreen = ({ route }) => {
         </View>
         <View style={tw`bg-white p-4 rounded-xl shadow-lg`}>
           <Text style={tw`text-2xl font-bold mb-2 text-gray-800`}>{product.name}</Text>
-          <Text style={tw`text-2xl font-bold mb-2 text-red-600`}>{formatPrice(product.price)}</Text>
+          <Text style={tw`text-2xl font-bold mb-2 text-yellow-600`}>{formatPrice(product.price)}</Text>
           <Text style={tw`text-lg font-bold mb-2 text-gray-600`}>Hãng: {product.brand}</Text>
           <Text style={tw`text-lg font-bold mb-4 text-gray-600`}>Danh mục: {product.category}</Text>
           <Text style={tw`text-base mb-6 text-gray-600 text-justify`}>{product.description}</Text>

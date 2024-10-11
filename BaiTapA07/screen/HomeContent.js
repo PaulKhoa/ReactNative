@@ -168,11 +168,12 @@ const HomeContent = ({ navigation }) => {
           >
             <Image 
               source={{ uri: item.image }} 
-              style={tw`w-24 h-24 rounded-md mx-auto mt-2`} 
+              style={tw`w-32 h-32 rounded-md mx-auto mt-2`} 
+              resizeMode="contain"
             />
             <View style={tw`mt-2 px-2`}>
               <Text style={tw`text-lg font-bold text-gray-800 text-center mb-1`}>{item.name}</Text>
-              <Text style={tw`text-lg text-red-600 font-semibold text-center`}>{formatPrice(item.price)}</Text>
+              <Text style={tw`text-lg text-yellow-600 font-semibold text-center`}>{formatPrice(item.price)}</Text>
             </View>
           </TouchableOpacity>
         )}
