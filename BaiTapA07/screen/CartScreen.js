@@ -29,19 +29,18 @@ const CartScreen = ({ navigation }) => {
         let total = 0;
         snapshot.forEach((childSnapshot) => {
           const item = childSnapshot.val();
-          const price = parseFloat(item.totalPrice) || 0;
+          const itemTotalPrice = parseFloat(item.totalPrice) || 0; // Lấy totalPrice từ database
 
-          // Tính tổng giá cho từng sản phẩm
           items.push({ id: childSnapshot.key, ...item });
+
           if (selectedItems[childSnapshot.key]) {
-            total += price; // Cộng dồn nếu sản phẩm được chọn
+            total += itemTotalPrice * item.quantity; // Tính tổng giá dựa trên totalPrice và số lượng
           }
         });
         setCartItems(items);
-        setTotalPrice(total);
+        setTotalPrice(total); // Cập nhật tổng giá
       });
 
-      // Dọn dẹp khi component bị tháo gỡ
       return () => unsubscribe();
     }
   }, [userId, selectedItems]);
@@ -54,20 +53,10 @@ const CartScreen = ({ navigation }) => {
 
   const handleQuantityChange = async (itemId, newQuantity) => {
     if (newQuantity < 1) return; // Không cho phép số lượng nhỏ hơn 1
-  
-    // Tìm sản phẩm có itemId trong giỏ hàng
-    const item = cartItems.find((product) => product.id === itemId);
-    if (!item) return;
-  
-    // Tính giá ban đầu của sản phẩm (totalPrice hiện tại chia cho số lượng hiện tại)
-    const originalPrice = item.totalPrice / item.quantity;
-  
-    // Tính lại tổng giá cho sản phẩm dựa trên giá ban đầu và số lượng mới
-    const updatedTotalPrice = originalPrice * newQuantity;
-  
-    // Cập nhật số lượng và tổng giá vào Firebase
+
+    // Cập nhật số lượng vào Firebase
     const itemRef = ref(database, `users/${userId}/cart/${itemId}`);
-    await update(itemRef, { quantity: newQuantity, totalPrice: updatedTotalPrice }); // Cập nhật số lượng và giá mới
+    await update(itemRef, { quantity: newQuantity });
   };
 
   const handleSelectItem = (itemId) => {
@@ -78,23 +67,20 @@ const CartScreen = ({ navigation }) => {
   };
 
   const handlePlaceOrder = () => {
-    // Kiểm tra nếu không có sản phẩm nào được chọn
     const hasSelectedItems = Object.values(selectedItems).includes(true);
   
     if (!hasSelectedItems) {
       Alert.alert('Thông báo', 'Vui lòng chọn ít nhất một sản phẩm để đặt hàng.');
       return;
-  }
+    }
   
-    // Chuyển đổi selectedItems từ trạng thái thành một đối tượng để truyền qua navigation
     const itemsToOrder = cartItems.filter(item => selectedItems[item.id]);
   
     navigation.navigate('OrderConfirmation', {
-      selectedItems: itemsToOrder, // Truyền thông tin sản phẩm đã chọn
+      selectedItems: itemsToOrder,
       totalPrice,
     });
   };
-  
 
   return (
     <View style={tw`flex-1 bg-gray-100 p-4`}>
@@ -103,7 +89,6 @@ const CartScreen = ({ navigation }) => {
           cartItems.map((item) => (
             <View key={item.id} style={tw`bg-white p-4 mb-4 rounded-lg shadow`}>
               <View style={tw`flex-row items-center`}>
-                {/* Nút tròn chọn sản phẩm */}
                 <TouchableOpacity
                   onPress={() => handleSelectItem(item.id)}
                   style={[
@@ -118,7 +103,7 @@ const CartScreen = ({ navigation }) => {
                 <View style={tw`flex-1 ml-4`}>
                   <Text style={tw`text-sm font-bold`}>{item.name}</Text>
                   <Text style={tw`text-yellow-600 text-lg font-bold`}>
-                    {formatPrice(item.totalPrice)}
+                    {formatPrice(item.totalPrice)} {/* Hiển thị totalPrice từ database */}
                   </Text>
                   <View style={tw`flex-row items-center mt-2`}>
                     <TouchableOpacity onPress={() => handleQuantityChange(item.id, item.quantity - 1)}>
@@ -152,7 +137,7 @@ const CartScreen = ({ navigation }) => {
         <Text style={tw`text-xl text-blue-600 font-bold`}>Tổng cộng: {formatPrice(totalPrice)}</Text>
         <TouchableOpacity
           style={tw`bg-green-500 py-3 rounded-lg mt-2 flex-row items-center justify-center`}
-          onPress={handlePlaceOrder} // Gọi hàm khi nhấn nút
+          onPress={handlePlaceOrder}
         >
           <Icon name="assignment" size={24} color="white" />
           <Text style={tw`text-white text-center text-xl font-semibold ml-2`}>Đặt hàng</Text>

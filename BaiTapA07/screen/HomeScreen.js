@@ -9,6 +9,7 @@ import FavoritesScreen from './FavoritesScreen';
 import CartScreen from './CartScreen';
 import OrderScreen from './OrderScreen'; // Import OrderScreen
 import OrderConfirmationScreen from './OrderConfirmationScreen'; // Import OrderConfirmationScreen
+import ProductReviewScreen from './ProductReviewScreen'; // Import ProductReviewScreen
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
@@ -98,6 +99,11 @@ const OrderStackScreen = () => (
       name="OrderScreen"
       component={OrderScreen}
       options={{ title: 'Đơn Hàng' }} // Tiêu đề cho OrderScreen
+    />
+    <OrderStack.Screen
+      name="ProductReview" // Định nghĩa route cho ProductReviewScreen
+      component={ProductReviewScreen}
+      options={{ title: 'Đánh Giá Sản Phẩm' }} // Tiêu đề cho màn hình đánh giá
     />
   </OrderStack.Navigator>
 );

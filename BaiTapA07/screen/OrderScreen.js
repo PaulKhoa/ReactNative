@@ -4,8 +4,10 @@ import tw from 'tailwind-react-native-classnames';
 import { auth, database } from '../firebase';
 import { ref, onValue, update } from 'firebase/database';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useNavigation } from '@react-navigation/native'; // Thêm dòng này
 
 const OrderScreen = () => {
+  const navigation = useNavigation(); // Khởi tạo navigation
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState('Tất cả đơn hàng');
@@ -15,7 +17,7 @@ const OrderScreen = () => {
     { title: 'Đã xác nhận', icon: 'check-circle-outline', filterValue: 'Đã xác nhận đơn hàng' },
     { title: 'Đang chuẩn bị', icon: 'store', filterValue: 'Shop đang chuẩn bị đơn hàng' },
     { title: 'Đang giao hàng', icon: 'local-shipping', filterValue: 'Đang giao hàng' },
-    { title: 'Đã giao hàng', icon: 'done-all', filterValue: 'Đã giao thành công' },
+    { title: 'Giao thành công', icon: 'done-all', filterValue: 'Đã giao thành công' },
     { title: 'Đã hủy đơn', icon: 'cancel', filterValue: 'Đã hủy' },
   ];
 
@@ -109,6 +111,11 @@ const OrderScreen = () => {
     );
   };
 
+  const handleReviewProduct = (item, orderId) => {
+    navigation.navigate('ProductReview', { product: item, orderId: orderId });
+  };
+  
+
   return (
     <View style={tw`flex-1 bg-gray-100 p-4`}>
       {loading ? (
@@ -144,6 +151,16 @@ const OrderScreen = () => {
                       <View style={tw`flex-1`}>
                         <Text style={tw`text-base`}>{item.name} x {item.quantity}</Text>
                         <Text style={tw`text-base font-bold text-yellow-600`}>{formatPrice(item.totalPrice)}</Text>
+
+                        {order.status === 'Đã giao thành công' && ( // Thêm nút đánh giá cho sản phẩm đã giao thành công
+                          <TouchableOpacity
+                            onPress={() => handleReviewProduct(item, order.id)}
+                            style={tw`mt-2 bg-blue-500 rounded p-2 flex-row items-center justify-center`}
+                          >
+                            <Icon name="rate-review" size={20} color="white" />
+                            <Text style={tw`text-white ml-1 font-bold`}>Đánh giá sản phẩm</Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
                     </View>
                   ))}
