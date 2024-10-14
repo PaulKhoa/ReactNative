@@ -13,6 +13,10 @@ const UserScreen = ({ navigation }) => {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [avatar, setAvatar] = useState(null);
+  const [points, setPoints] = useState(0);
+  const [favorites, setFavorites] = useState([]); // Khai báo state cho favorites
+  const [cart, setCart] = useState([]); // Khai báo state cho cart
+  const [orders, setOrders] = useState([]); // Khai báo state cho orders
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [otp, setOtp] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState('');
@@ -31,12 +35,20 @@ const UserScreen = ({ navigation }) => {
           phone: userData.phone || '',
           address: userData.address || '',
           avatar: userData.avatar || null,
+          points: userData.points || 0,
+          favorites: userData.favorites || [], // Lấy giá trị favorites từ userData
+          cart: userData.cart || [], // Lấy giá trị cart từ userData
+          orders: userData.orders || [], // Lấy giá trị orders từ userData
         });
         setName(userData.name || '');
         setDob(userData.dob || '');
         setPhone(userData.phone || '');
         setAddress(userData.address || '');
         setAvatar(userData.avatar || null);
+        setPoints(userData.points || 0);
+        setFavorites(userData.favorites || []); // Cập nhật state favorites
+        setCart(userData.cart || []); // Cập nhật state cart
+        setOrders(userData.orders || []); // Cập nhật state orders
       } catch (error) {
         Alert.alert('Lỗi', 'Không thể tải thông tin người dùng.');
       }
@@ -145,7 +157,7 @@ const UserScreen = ({ navigation }) => {
     try {
       if (!userId) throw new Error('Người dùng chưa đăng nhập');
 
-      await updateUserData(userId, { name, dob, phone, address, avatar });
+      await updateUserData(userId, { name, dob, phone, address, avatar, points, favorites, cart, orders });
       Alert.alert('Thông báo', 'Cập nhật thông tin thành công!');
       setEditModalVisible(false);
 
@@ -156,12 +168,20 @@ const UserScreen = ({ navigation }) => {
         phone: userData.phone || '',
         address: userData.address || '',
         avatar: userData.avatar || null,
+        favorites: userData.favorites || [], // Update favorites
+        cart: userData.cart || [], // Update cart
+        orders: userData.orders || [], // Update orders
+        points: userData.points || 0, // Cập nhật lại điểm tích lũy
       });
       setName(userData.name || '');
       setDob(userData.dob || '');
       setPhone(userData.phone || '');
       setAddress(userData.address || '');
       setAvatar(userData.avatar || null);
+      setFavorites(userData.favorites || []); // Update favorites state
+      setCart(userData.cart || []); // Update cart state
+      setOrders(userData.orders || []); // Update orders state
+      setPoints(userData.points || 0); // Cập nhật lại state points
     } catch (error) {
       Alert.alert('Lỗi', 'Không thể cập nhật thông tin.');
     }
@@ -249,6 +269,18 @@ const UserScreen = ({ navigation }) => {
             placeholder="Địa chỉ"
             value={address}
             onChangeText={setAddress}
+          />
+        </View>
+      </View>
+
+      <View style={tw`mb-4`}>
+        <View style={tw`flex-row items-center`}>
+          <Icon name="star" size={20} color="#007bff" />
+          <TextInput
+            style={tw`flex-1 ml-2 text-lg font-bold text-gray-800 py-3`}
+            placeholder="Điểm tích lũy"
+            value={points.toString()} // Hiển thị điểm tích lũy
+            editable={false} // Không cho phép chỉnh sửa
           />
         </View>
       </View>

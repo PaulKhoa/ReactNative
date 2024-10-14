@@ -3,7 +3,7 @@ import { View, Text, Image, ScrollView, TextInput, TouchableOpacity, Alert } fro
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import tw from 'tailwind-react-native-classnames';
 import { database } from '../firebase';
-import { ref, set, onValue } from 'firebase/database'; 
+import { get, ref, set, onValue } from 'firebase/database'; 
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 
 const ProductReviewScreen = ({ route, navigation }) => {
@@ -91,7 +91,16 @@ const ProductReviewScreen = ({ route, navigation }) => {
     try {
       const reviewRef = ref(database, `products/${product.id}/orders/${orderId}/reviews/${userId}`); 
       await set(reviewRef, reviewItem);
-      Alert.alert('Thông báo', 'Đánh giá của bạn đã được gửi thành công.');
+      // Cập nhật điểm cho người dùng
+      const userRef = ref(database, `users/${userId}`);
+      const userSnapshot = await get(userRef);
+      const userData = userSnapshot.val();
+      const newPoints = (userData.points || 0) + 1000; // Thêm 1000 điểm
+      
+      // Cập nhật lại thông tin người dùng
+      await set(userRef, { ...userData, points: newPoints });
+
+      Alert.alert('Thông báo', 'Đánh giá của bạn đã được gửi thành công. Bạn nhận được 1000 điểm!');
       navigation.navigate('OrderScreen', { reviewSubmitted: true });
       setRating(0); 
       setReviewText('');

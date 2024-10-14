@@ -180,7 +180,7 @@ const ProductDetailsScreen = ({ route }) => {
                       style={tw`w-full h-32 rounded-lg`}
                       resizeMode="contain"
                     />
-                    <Text style={tw`mt-2 text-sm font-bold text-center`}>{item.name}</Text>
+                    <Text style={tw`mt-2 text-lg font-bold text-center`}>{item.name}</Text>
                     <Text style={tw`text-lg font-bold text-yellow-600 text-center`}>{formatPrice(item.price)}</Text>
                   </View>
                 </TouchableOpacity>
