@@ -94,71 +94,67 @@ const FavoritesScreen = ({ navigation }) => {
     };
 
     return (
-      <View style={tw`flex-1 bg-gray-100`}>
+        <View style={tw`flex-1 bg-gray-100`}>
           <ScrollView contentContainerStyle={tw`p-4`}>
-              {Object.keys(favorites).length === 0 ? (
-                  <View style={tw`flex-1 items-center justify-center`}>
-                      <Icon name="star" size={60} color="#f00" />
-                      <Text style={tw`text-lg text-center text-gray-600 mt-4`}>
-                          Danh sách yêu thích của bạn đang trống!
-                      </Text>
-                      <Text style={tw`text-base text-center text-gray-500 mt-2`}>
-                          Hãy khám phá các sản phẩm tuyệt vời và thêm vào danh sách yêu thích ngay nhé!
-                      </Text>
-                      <TouchableOpacity 
-                          onPress={() => navigation.navigate('HomeContent')} // Điều hướng đến trang sản phẩm
-                          style={tw`bg-green-500 rounded-lg mt-4 px-4 py-2`}
-                      >
-                          <Text style={tw`text-white text-lg font-bold`}>Khám phá ngay</Text>
-                      </TouchableOpacity>
+            {Object.keys(favorites).length === 0 ? (
+              <View style={tw`flex-1 items-center justify-center`}>
+                <Icon name="star" size={60} color="#f00" />
+                <Text style={tw`text-lg text-center text-gray-600 mt-4`}>
+                  Danh sách yêu thích của bạn đang trống!
+                </Text>
+                <Text style={tw`text-base text-center text-gray-500 mt-2`}>
+                  Hãy khám phá các sản phẩm tuyệt vời và thêm vào danh sách yêu thích ngay nhé!
+                </Text>
+                <TouchableOpacity 
+                  onPress={() => navigation.navigate('HomeContent')} // Điều hướng đến trang sản phẩm
+                  style={tw`bg-green-500 rounded-lg mt-4 px-4 py-2`}
+                >
+                  <Text style={tw`text-white text-lg font-bold`}>Khám phá ngay</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              Object.keys(favorites).map((key) => {
+                const product = favorites[key];
+                return (
+                  <View key={key} style={tw`bg-white rounded-lg p-4 mb-4 flex-row items-center shadow`}>
+                    <Image source={{ uri: product.image }} style={tw`w-20 h-20 rounded-lg`} resizeMode="contain" />
+                    <View style={tw`flex-1 ml-4`}>
+                      <Text style={tw`text-base font-bold`}>{product.name}</Text>
+                      <Text style={tw`text-lg font-bold text-yellow-600`}>{formatPrice(product.price)}</Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={tw`ml-2`}
+                      onPress={() => handleRemoveFavorite(key)}
+                    >
+                      <Icon name="delete" size={30} color="red" />
+                    </TouchableOpacity>
                   </View>
-              ) : (
-                  Object.keys(favorites).map((key) => {
-                      const product = favorites[key];
-                      return (
-                          <View key={key} style={tw`bg-white rounded-lg p-4 mb-4 flex-row items-center shadow`}>
-                              <TouchableOpacity onPress={() => handleProductPress(key)}>
-                                  <Image source={{ uri: product.image }} style={tw`w-20 h-20 rounded-lg`} resizeMode="contain" />
-                              </TouchableOpacity>
-                              <View style={tw`flex-1 ml-4`}>
-                                  <Text style={tw`text-base font-bold`}>{product.name}</Text>
-                                  <Text style={tw`text-lg font-bold text-yellow-600`}>{formatPrice(product.price)}</Text>
-                              </View>
-                              <TouchableOpacity 
-                                  style={tw`ml-2`}
-                                  onPress={() => handleRemoveFavorite(key)}
-                              >
-                                  <Icon name="delete" size={30} color="red" />
-                              </TouchableOpacity>
-                          </View>
-                      );
-                  })
-              )}
-
-              {/* Đường ngang với chữ "Có lẽ bạn sẽ thích" */}
-              <View style={tw`flex-row items-center my-6`}>
-                  <View style={tw`flex-1 h-px bg-gray-300`} />
-                  <Text style={tw`mx-4 text-gray-600 text-lg font-semibold`}>Có thể bạn sẽ thích</Text>
-                  <View style={tw`flex-1 h-px bg-gray-300`} />
-              </View>
-
-              {/* Hiển thị 10 sản phẩm bán chạy nhất trong 2 cột */}
-              <View style={tw`flex-row flex-wrap justify-between`}>
-                  {topProducts.map((product) => (
-                      <View key={product.id} style={tw`w-1/2 p-1`}>
-                          <TouchableOpacity onPress={() => handleProductPress(product.id)}>
-                              <View style={tw`bg-white rounded-lg p-2 shadow`}>
-                                  <Image source={{ uri: product.image }} style={tw`w-full h-32 rounded-lg`} resizeMode="contain" />
-                                  <Text style={tw`mt-2 text-xs font-bold text-center`}>{product.name}</Text>
-                                  <Text style={tw`text-lg font-bold text-yellow-600 text-center`}>{formatPrice(product.price)}</Text>
-                              </View>
-                          </TouchableOpacity>
-                      </View>
-                  ))}
-              </View>
+                );
+              })
+            )}
+      
+            {/* Đường ngang với chữ "Có lẽ bạn sẽ thích" */}
+            <View style={tw`flex-row items-center my-6`}>
+              <View style={tw`flex-1 h-px bg-gray-300`} />
+              <Text style={tw`mx-4 text-gray-600 text-lg font-semibold`}>Có thể bạn sẽ thích</Text>
+              <View style={tw`flex-1 h-px bg-gray-300`} />
+            </View>
+      
+            {/* Hiển thị 10 sản phẩm bán chạy nhất trong 2 cột */}
+            <View style={tw`flex-row flex-wrap justify-between`}>
+              {topProducts.map((product) => (
+                <View key={product.id} style={tw`w-1/2 p-1`}>
+                  <View style={tw`bg-white rounded-lg p-2 shadow`}>
+                    <Image source={{ uri: product.image }} style={tw`w-full h-32 rounded-lg`} resizeMode="contain" />
+                    <Text style={tw`mt-2 text-xs font-bold text-center`}>{product.name}</Text>
+                    <Text style={tw`text-lg font-bold text-yellow-600 text-center`}>{formatPrice(product.price)}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
           </ScrollView>
-      </View>
-  );  
+        </View>
+      );        
 };
 
 export default FavoritesScreen;

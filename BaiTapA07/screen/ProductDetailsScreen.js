@@ -173,7 +173,6 @@ const ProductDetailsScreen = ({ route }) => {
           <View style={tw`flex-row flex-wrap justify-between`}>
             {similarProducts.map((item) => (
               <View key={`${item.id}-${item.name}`} style={tw`w-1/2 p-1`}>
-                <TouchableOpacity onPress={() => {/* Xử lý điều hướng đến chi tiết sản phẩm */}}>
                   <View style={tw`bg-white rounded-lg p-2 shadow`}>
                     <Image
                       source={{ uri: item.image }}
@@ -183,7 +182,6 @@ const ProductDetailsScreen = ({ route }) => {
                     <Text style={tw`mt-2 text-lg font-bold text-center`}>{item.name}</Text>
                     <Text style={tw`text-lg font-bold text-yellow-600 text-center`}>{formatPrice(item.price)}</Text>
                   </View>
-                </TouchableOpacity>
               </View>
             ))}
           </View>

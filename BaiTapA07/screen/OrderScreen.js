@@ -4,15 +4,16 @@ import tw from 'tailwind-react-native-classnames';
 import { auth, database } from '../firebase';
 import { ref, onValue, update } from 'firebase/database';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native'; // Thêm dòng này
+import { useNavigation } from '@react-navigation/native'; 
 
 const OrderScreen = () => {
-  const navigation = useNavigation(); // Khởi tạo navigation
+  const navigation = useNavigation();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState('Tất cả đơn hàng');
+  const [selectedStatus, setSelectedStatus] = useState('Tất cả đơn');
 
   const statuses = [
+    { title: 'Tất cả đơn', icon: 'list', filterValue: null },
     { title: 'Đang xử lý', icon: 'pending', filterValue: 'Đang xử lý' },
     { title: 'Đã xác nhận', icon: 'check-circle-outline', filterValue: 'Đã xác nhận đơn hàng' },
     { title: 'Đang chuẩn bị', icon: 'store', filterValue: 'Shop đang chuẩn bị đơn hàng' },
@@ -51,7 +52,7 @@ const OrderScreen = () => {
   }, []);
 
   const filterOrders = () => {
-    if (selectedStatus === 'Tất cả đơn hàng') {
+    if (selectedStatus === 'Tất cả đơn') {
       return orders;
     }
     const selectedStatusObj = statuses.find(status => status.title === selectedStatus);
@@ -91,7 +92,7 @@ const OrderScreen = () => {
   };
 
   const renderIcon = (status) => {
-    const ordersCount = orders.filter((order) => order.status === status.filterValue).length;
+    const ordersCount = orders.filter((order) => status.filterValue ? order.status === status.filterValue : true).length; // Cập nhật để tính số lượng cho "Tất cả đơn hàng"
     return (
       <TouchableOpacity
         key={status.title}
@@ -122,14 +123,12 @@ const OrderScreen = () => {
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <>
-          {/* Thanh trạng thái với các icon */}
           <View style={tw`h-24 mb-4`}>
             <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={tw`mt-4`} contentContainerStyle={tw`flex-row justify-between`}>
               {statuses.map((status) => renderIcon(status))}
             </ScrollView>
           </View>
 
-          {/* Danh sách đơn hàng */}
           <ScrollView style={tw`flex-1`}>
             {filterOrders().length === 0 ? (
               <Text style={tw`text-lg text-center text-gray-600`}>Không có đơn hàng với trạng thái "{selectedStatus}".</Text>
@@ -152,7 +151,7 @@ const OrderScreen = () => {
                         <Text style={tw`text-base`}>{item.name} x {item.quantity}</Text>
                         <Text style={tw`text-base font-bold text-yellow-600`}>{formatPrice(item.totalPrice)}</Text>
 
-                        {order.status === 'Đã giao thành công' && ( // Thêm nút đánh giá cho sản phẩm đã giao thành công
+                        {order.status === 'Đã giao thành công' && (
                           <TouchableOpacity
                             onPress={() => handleReviewProduct(item, order.id)}
                             style={tw`mt-2 bg-blue-500 rounded p-2 flex-row items-center justify-center`}
@@ -189,4 +188,4 @@ const formatPrice = (price) => {
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' VNĐ';
 };
 
-export default OrderScreen;
+export default OrderScreen;  

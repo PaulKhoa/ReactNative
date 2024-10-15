@@ -58,9 +58,10 @@ const UserScreen = ({ navigation }) => {
   }, []);
 
   const validateName = (text) => {
-    const nameRegex = /^[A-Za-zÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂƠƯăâêôơư ]+$/;
+    const nameRegex = /^[A-Za-zÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂƠƯăâêôơư ả ẳ ã ạ ẩ ậ ẻ ề ệ ể ệ ỉ ị ỏ ỏ ố ồ ộ ỗ ổ ớ ờ ợ ụ ủ ũ ư ứ ừ ự ử]+$/;
     return nameRegex.test(text);
-  };
+};
+
 
   const validateDob = (date) => {
     const dateRegex = /^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[012])\/\d{4}$/;
