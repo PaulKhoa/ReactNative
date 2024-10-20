@@ -10,21 +10,21 @@ const OrderScreen = () => {
   const navigation = useNavigation();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState('Tất cả đơn');
+  const [selectedStatus, setSelectedStatus] = useState('Tất cả');
 
   const statuses = [
-    { title: 'Tất cả đơn', icon: 'list', filterValue: null },
+    { title: 'Tất cả', icon: 'list', filterValue: null },
     { title: 'Đang xử lý', icon: 'pending', filterValue: 'Đang xử lý' },
     { title: 'Đã xác nhận', icon: 'check-circle-outline', filterValue: 'Đã xác nhận đơn hàng' },
     { title: 'Đang chuẩn bị', icon: 'store', filterValue: 'Shop đang chuẩn bị đơn hàng' },
-    { title: 'Đang giao hàng', icon: 'local-shipping', filterValue: 'Đang giao hàng' },
-    { title: 'Giao thành công', icon: 'done-all', filterValue: 'Đã giao thành công' },
-    { title: 'Đã hủy đơn', icon: 'cancel', filterValue: 'Đã hủy' },
+    { title: 'Đang giao', icon: 'local-shipping', filterValue: 'Đang giao hàng' },
+    { title: 'Đánh giá', icon: 'rate-review', filterValue: 'Đã giao thành công' },
+    { title: 'Đã hủy', icon: 'cancel', filterValue: 'Đã hủy' },
   ];
 
   useEffect(() => {
     const userId = auth.currentUser ? auth.currentUser.uid : null;
-
+  
     if (userId) {
       const ordersRef = ref(database, `users/${userId}/orders`);
       onValue(
@@ -36,6 +36,15 @@ const OrderScreen = () => {
               id: key,
               ...value,
             }));
+  
+            const parseOrderTime = (orderTime) => {
+              const [time, date] = orderTime.split(', ');
+              const [hours, minutes, seconds] = time.split(':');
+              const [day, month, year] = date.split('/');
+              return new Date(`${year}-${month}-${day}T${hours}:${minutes}:${seconds}`);
+            };
+  
+            ordersList.sort((a, b) => parseOrderTime(b.orderTime) - parseOrderTime(a.orderTime));
             setOrders(ordersList);
           } else {
             setOrders([]);
@@ -50,13 +59,17 @@ const OrderScreen = () => {
       setLoading(false);
     }
   }, []);
-
+  
   const filterOrders = () => {
-    if (selectedStatus === 'Tất cả đơn') {
+    if (selectedStatus === 'Tất cả') {
       return orders;
     }
     const selectedStatusObj = statuses.find(status => status.title === selectedStatus);
     return orders.filter((order) => order.status === selectedStatusObj.filterValue);
+  };
+
+  const calculateTotalAmount = () => {
+    return filterOrders().reduce((total, order) => total + order.totalAmount, 0);
   };
 
   const handleCancelOrder = (orderId) => {
@@ -92,7 +105,9 @@ const OrderScreen = () => {
   };
 
   const renderIcon = (status) => {
-    const ordersCount = orders.filter((order) => status.filterValue ? order.status === status.filterValue : true).length; // Cập nhật để tính số lượng cho "Tất cả đơn hàng"
+    const isDisplayCount = status.title !== 'Tất cả' && status.title !== 'Đánh giá' && status.title !== 'Đã hủy';
+    const ordersCount = isDisplayCount ? orders.filter((order) => status.filterValue ? order.status === status.filterValue : true).length : 0;
+
     return (
       <TouchableOpacity
         key={status.title}
@@ -101,7 +116,7 @@ const OrderScreen = () => {
       >
         <View style={tw`relative`}>
           <Icon name={status.icon} size={40} color={selectedStatus === status.title ? 'blue' : 'gray'} />
-          {ordersCount > 0 && (
+          {isDisplayCount && ordersCount > 0 && (
             <View style={tw`absolute -top-0 -right-2 bg-red-600 rounded-full w-6 h-6 flex items-center justify-center`}>
               <Text style={tw`text-white text-xs`}>{ordersCount}</Text>
             </View>
@@ -115,7 +130,11 @@ const OrderScreen = () => {
   const handleReviewProduct = (item, orderId) => {
     navigation.navigate('ProductReview', { product: item, orderId: orderId });
   };
-  
+
+  const formatPrice = (price) => {
+    if (price === undefined || price === null) return '';
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' VNĐ';
+  };
 
   return (
     <View style={tw`flex-1 bg-gray-100 p-4`}>
@@ -165,27 +184,26 @@ const OrderScreen = () => {
                   ))}
 
                   {order.status === 'Đang xử lý' && (
-                    <View style={tw`mt-2`}>
-                      <Button
-                        title="Hủy đơn hàng"
-                        color="red"
-                        onPress={() => handleCancelOrder(order.id)}
-                      />
-                    </View>
+                    <TouchableOpacity
+                      onPress={() => handleCancelOrder(order.id)}
+                      style={tw`mt-4 bg-red-500 p-2 rounded`}
+                    >
+                      <Text style={tw`text-white text-center font-bold`}>Hủy đơn hàng</Text>
+                    </TouchableOpacity>
                   )}
                 </View>
               ))
             )}
           </ScrollView>
+
+          {/* Hiển thị tổng số tiền ở cuối màn hình */}
+          <View style={[tw`p-4 bg-white rounded-tl-lg rounded-tr-lg`, { position: 'relative', bottom: 0, left: 0, right: 0 }]}>
+            <Text style={tw`text-xl text-blue-600 font-bold`}>Tổng cộng: {formatPrice(calculateTotalAmount())}</Text>
+          </View>
         </>
       )}
     </View>
   );
 };
 
-const formatPrice = (price) => {
-  if (price === undefined || price === null) return '';
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' VNĐ';
-};
-
-export default OrderScreen;  
+export default OrderScreen;
