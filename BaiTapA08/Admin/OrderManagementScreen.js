@@ -18,7 +18,7 @@ const OrderManagementScreen = () => {
       onValue(ordersRef, (snapshot) => {
         const usersData = snapshot.val();
         const ordersList = [];
-
+  
         if (usersData) {
           Object.entries(usersData).forEach(([userId, userInfo]) => {
             if (userInfo.orders) {
@@ -27,6 +27,17 @@ const OrderManagementScreen = () => {
               });
             }
           });
+  
+          // Hàm parse thời gian đơn hàng từ chuỗi thành đối tượng Date
+          const parseOrderTime = (orderTime) => {
+            const [time, date] = orderTime.split(', ');
+            const [hours, minutes, seconds] = time.split(':');
+            const [day, month, year] = date.split('/');
+            return new Date(`${year}-${month}-${day}T${hours}:${minutes}:${seconds}`);
+          };
+  
+          // Sắp xếp danh sách đơn hàng theo thời gian mới nhất
+          ordersList.sort((a, b) => parseOrderTime(b.orderTime) - parseOrderTime(a.orderTime));
         }
         setOrders(ordersList);
         setLoading(false);
@@ -34,10 +45,10 @@ const OrderManagementScreen = () => {
         setLoading(false);
       });
     };
-
+  
     fetchOrders();
   }, []);
-
+  
   const handleStatusUpdate = (orderId, userId) => {
     const updates = {};
     const newStatus = statusByOrder[orderId]; // Lấy trạng thái của đơn hàng cụ thể
@@ -76,7 +87,7 @@ const OrderManagementScreen = () => {
     <View key={order.orderId} style={tw`bg-white rounded-lg shadow-md p-4 mb-4`}>
       <Text style={tw`text-base font-bold text-blue-600`}>Đơn hàng ID: {order.orderId}</Text>
       <Text style={tw`text-base font-bold`}>Tên người dùng: {order.userInfo.name}</Text>
-      <Text style={tw`text-base font-bold`}>Địa chỉ: {order.userInfo.address}</Text>
+      <Text style={tw`text-base font-bold`}>Địa chỉ giao hàng: {order.shippingAddress}</Text>
       <Text style={tw`text-base font-bold`}>Số điện thoại: {order.userInfo.phone}</Text>
       <Text style={tw`text-base font-bold`}>Thời gian: {order.orderTime}</Text>
       <Text style={tw`text-base font-bold text-green-600`}>Tổng cộng: {formatPrice(order.totalAmount)}</Text>

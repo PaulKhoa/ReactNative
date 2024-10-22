@@ -1,29 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { View, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { FontAwesome } from '@expo/vector-icons';
 import UserScreen from './UserScreen';
 import HomeContent from './HomeContent';
-import ProductDetailsScreen from './ProductDetailsScreen'; // Import ProductDetailsScreen
+import ProductDetailsScreen from './ProductDetailsScreen';
 import FavoritesScreen from './FavoritesScreen';
 import CartScreen from './CartScreen';
-import OrderScreen from './OrderScreen'; // Import OrderScreen
-import OrderConfirmationScreen from './OrderConfirmationScreen'; // Import OrderConfirmationScreen
-import ProductReviewScreen from './ProductReviewScreen'; // Import ProductReviewScreen
+import OrderScreen from './OrderScreen';
+import OrderConfirmationScreen from './OrderConfirmationScreen';
+import ProductReviewScreen from './ProductReviewScreen';
+import { auth, database } from '../firebase'; // Firebase imports
+import { ref, onValue } from 'firebase/database';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
 const UserStack = createStackNavigator();
-const FavoriteStack = createStackNavigator(); // Tạo Stack cho Favorites
-const CartStack = createStackNavigator(); // Tạo Stack cho Cart
-const OrderStack = createStackNavigator(); // Tạo Stack cho Order
+const FavoriteStack = createStackNavigator();
+const CartStack = createStackNavigator();
+const OrderStack = createStackNavigator();
 
-// HomeStackScreen
 const HomeStackScreen = () => (
   <HomeStack.Navigator
-    screenOptions={{
-      headerLeft: () => null, // Bỏ nút quay lại
-    }}
+    screenOptions={{ headerLeft: () => null }}
   >
     <HomeStack.Screen
       name="HomeContent"
@@ -31,19 +31,21 @@ const HomeStackScreen = () => (
       options={{ title: 'Trang Chủ' }}
     />
     <HomeStack.Screen
-      name="ProductDetails" // Thêm route cho ProductDetailsScreen
+      name="ProductDetails"
       component={ProductDetailsScreen}
-      options={{ title: 'Chi Tiết Sản Phẩm' }} // Tiêu đề cho màn hình chi tiết sản phẩm
+      options={{ title: 'Chi Tiết Sản Phẩm' }}
+    />
+    <HomeStack.Screen
+      name="OrderConfirmation"
+      component={OrderConfirmationScreen}
+      options={{ title: 'Xác Nhận Đơn Hàng' }}
     />
   </HomeStack.Navigator>
 );
 
-// UserStackScreen
 const UserStackScreen = () => (
   <UserStack.Navigator
-    screenOptions={{
-      headerLeft: () => null, // Bỏ nút quay lại
-    }}
+    screenOptions={{ headerLeft: () => null }}
   >
     <UserStack.Screen
       name="UserScreen"
@@ -53,12 +55,9 @@ const UserStackScreen = () => (
   </UserStack.Navigator>
 );
 
-// FavoriteStackScreen
 const FavoriteStackScreen = () => (
   <FavoriteStack.Navigator
-    screenOptions={{
-      headerLeft: () => null, // Bỏ nút quay lại
-    }}
+    screenOptions={{ headerLeft: () => null }}
   >
     <FavoriteStack.Screen
       name="Favorites"
@@ -68,12 +67,9 @@ const FavoriteStackScreen = () => (
   </FavoriteStack.Navigator>
 );
 
-// CartStackScreen
 const CartStackScreen = () => (
   <CartStack.Navigator
-    screenOptions={{
-      headerLeft: () => null, // Bỏ nút quay lại
-    }}
+    screenOptions={{ headerLeft: () => null }}
   >
     <CartStack.Screen
       name="CartScreen"
@@ -81,35 +77,66 @@ const CartStackScreen = () => (
       options={{ title: 'Giỏ Hàng' }}
     />
     <CartStack.Screen
-      name="OrderConfirmation" // Định nghĩa route cho OrderConfirmationScreen
+      name="OrderConfirmation"
       component={OrderConfirmationScreen}
-      options={{ title: 'Xác Nhận Đơn Hàng' }} // Tiêu đề cho màn hình xác nhận
+      options={{ title: 'Xác Nhận Đơn Hàng' }}
     />
   </CartStack.Navigator>
 );
 
-// OrderStackScreen
 const OrderStackScreen = () => (
   <OrderStack.Navigator
-    screenOptions={{
-      headerLeft: () => null, // Bỏ nút quay lại
-    }}
+    screenOptions={{ headerLeft: () => null }}
   >
     <OrderStack.Screen
       name="OrderScreen"
       component={OrderScreen}
-      options={{ title: 'Đơn Hàng' }} // Tiêu đề cho OrderScreen
+      options={{ title: 'Đơn Hàng' }}
     />
     <OrderStack.Screen
-      name="ProductReview" // Định nghĩa route cho ProductReviewScreen
+      name="ProductReview"
       component={ProductReviewScreen}
-      options={{ title: 'Đánh Giá Sản Phẩm' }} // Tiêu đề cho màn hình đánh giá
+      options={{ title: 'Đánh Giá Sản Phẩm' }}
     />
   </OrderStack.Navigator>
 );
 
 // Tab Navigator cho HomeScreen
 const HomeScreen = () => {
+  const [cartItemCount, setCartItemCount] = useState(0); // Trạng thái lưu số lượng sản phẩm trong giỏ hàng
+  const [favoriteItemCount, setFavoriteItemCount] = useState(0); // Trạng thái lưu số lượng sản phẩm yêu thích
+
+  const userId = auth.currentUser ? auth.currentUser.uid : null;
+
+  useEffect(() => {
+    if (userId) {
+      // Lấy số lượng sản phẩm trong giỏ hàng
+      const cartRef = ref(database, `users/${userId}/cart`);
+      const unsubscribeCart = onValue(cartRef, (snapshot) => {
+        let itemCount = 0;
+        snapshot.forEach((childSnapshot) => {
+          itemCount += 1; // Đếm từng item, không tính số lượng của từng sản phẩm
+        });
+        setCartItemCount(itemCount); // Cập nhật trạng thái số lượng giỏ hàng
+      });
+
+      // Lấy số lượng sản phẩm yêu thích
+      const favoritesRef = ref(database, `users/${userId}/favorites`);
+      const unsubscribeFavorites = onValue(favoritesRef, (snapshot) => {
+        let favCount = 0;
+        snapshot.forEach((childSnapshot) => {
+          favCount += 1; // Đếm từng mục yêu thích
+        });
+        setFavoriteItemCount(favCount); // Cập nhật trạng thái số lượng yêu thích
+      });
+
+      return () => {
+        unsubscribeCart();
+        unsubscribeFavorites();
+      };
+    }
+  }, [userId]);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -125,10 +152,48 @@ const HomeScreen = () => {
           } else if (route.name === 'Cart') {
             iconName = 'shopping-cart';
           } else if (route.name === 'Order') {
-            iconName = 'list'; // Thay đổi biểu tượng nếu cần
+            iconName = 'list';
           }
 
-          return <FontAwesome name={iconName} size={size} color={color} />;
+          return (
+            <View>
+              <FontAwesome name={iconName} size={size} color={color} />
+              {route.name === 'Cart' && cartItemCount > 0 && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    right: -10,
+                    top: -5,
+                    backgroundColor: 'red',
+                    borderRadius: 10,
+                    width: 20,
+                    height: 20,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text style={{ color: 'white', fontSize: 12 }}>{cartItemCount}</Text>
+                </View>
+              )}
+            {route.name === 'FavoritesTab' && favoriteItemCount > 0 && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    right: -10,
+                    top: -5,
+                    backgroundColor: 'red',
+                    borderRadius: 10,
+                    width: 20,
+                    height: 20,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text style={{ color: 'white', fontSize: 12 }}>{favoriteItemCount}</Text>
+                </View>
+              )}
+            </View>
+          );
         },
         tabBarActiveTintColor: 'tomato',
         tabBarInactiveTintColor: 'gray',
@@ -142,17 +207,17 @@ const HomeScreen = () => {
       />
       <Tab.Screen
         name="FavoritesTab"
-        component={FavoriteStackScreen} // Thêm FavoriteStackScreen
+        component={FavoriteStackScreen}
         options={{ title: 'Yêu Thích' }}
       />
       <Tab.Screen
         name="Cart"
-        component={CartStackScreen} // Thay đổi thành CartStackScreen
+        component={CartStackScreen}
         options={{ title: 'Giỏ Hàng' }}
       />
       <Tab.Screen
         name="Order"
-        component={OrderStackScreen} // Sử dụng OrderStackScreen cho Order
+        component={OrderStackScreen}
         options={{ title: 'Đơn Hàng' }}
       />
       <Tab.Screen

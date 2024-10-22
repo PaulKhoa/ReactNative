@@ -159,6 +159,7 @@ const OrderScreen = () => {
                   <Text style={tw`text-base font-bold text-green-600`}>Tổng cộng: {formatPrice(order.totalAmount)}</Text>
                   <Text style={tw`text-base font-bold`}>Hình thức thanh toán: {order.paymentMethod}</Text>
                   <Text style={tw`text-base font-bold text-red-500`}>Trạng thái: {order.status}</Text>
+                  <Text style={tw`text-base font-bold`}>Địa chỉ nhận hàng: {order.shippingAddress}</Text>
 
                   <Text style={tw`text-lg font-bold mt-2`}>Sản phẩm:</Text>
                   {order.items.map((item, index) => (
@@ -197,8 +198,8 @@ const OrderScreen = () => {
           </ScrollView>
 
           {/* Hiển thị tổng số tiền ở cuối màn hình */}
-          <View style={[tw`p-4 bg-white rounded-tl-lg rounded-tr-lg`, { position: 'relative', bottom: 0, left: 0, right: 0 }]}>
-            <Text style={tw`text-xl text-blue-600 font-bold`}>Tổng cộng: {formatPrice(calculateTotalAmount())}</Text>
+          <View style={[tw`p-4 bg-green-500 rounded-tl-lg rounded-tr-lg`, { position: 'relative', bottom: 0, left: 0, right: 0 }]}>
+            <Text style={tw`text-xl text-white font-bold`}>Tổng cộng: {formatPrice(calculateTotalAmount())}</Text>
           </View>
         </>
       )}

@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, Modal, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { auth, signOut, updateUserData, getUserData } from '../firebase';
+import { auth, signOut, updateUserData, getUserData, database} from '../firebase';
 import { sendOTPEmail, generateOTP } from '../otpService';
 import tw from 'tailwind-react-native-classnames';
+import { ref, onValue } from 'firebase/database';
+
 
 const UserScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -35,7 +37,7 @@ const UserScreen = ({ navigation }) => {
           phone: userData.phone || '',
           address: userData.address || '',
           avatar: userData.avatar || null,
-          points: userData.points || 0,
+          //points: userData.points || 0,
           favorites: userData.favorites || [], // Lấy giá trị favorites từ userData
           cart: userData.cart || [], // Lấy giá trị cart từ userData
           orders: userData.orders || [], // Lấy giá trị orders từ userData
@@ -45,7 +47,7 @@ const UserScreen = ({ navigation }) => {
         setPhone(userData.phone || '');
         setAddress(userData.address || '');
         setAvatar(userData.avatar || null);
-        setPoints(userData.points || 0);
+        //setPoints(userData.points || 0);
         setFavorites(userData.favorites || []); // Cập nhật state favorites
         setCart(userData.cart || []); // Cập nhật state cart
         setOrders(userData.orders || []); // Cập nhật state orders
@@ -55,6 +57,19 @@ const UserScreen = ({ navigation }) => {
     };
 
     loadUserData();
+
+     // Theo dõi và cập nhật điểm số theo thời gian thực
+     const userId = auth.currentUser?.uid;
+     if (userId) {
+       const pointsRef = ref(database, `users/${userId}/points`);
+       const unsubscribe = onValue(pointsRef, (snapshot) => {
+         const updatedPoints = snapshot.val();
+         setPoints(updatedPoints || 0); // Cập nhật điểm số nếu thay đổi
+       });
+ 
+       // Cleanup listener khi component bị unmount
+       return () => unsubscribe();
+     }
   }, []);
 
   const validateName = (text) => {
@@ -172,7 +187,7 @@ const UserScreen = ({ navigation }) => {
         favorites: userData.favorites || [], // Update favorites
         cart: userData.cart || [], // Update cart
         orders: userData.orders || [], // Update orders
-        points: userData.points || 0, // Cập nhật lại điểm tích lũy
+        //points: userData.points || 0, // Cập nhật lại điểm tích lũy
       });
       setName(userData.name || '');
       setDob(userData.dob || '');
@@ -182,7 +197,7 @@ const UserScreen = ({ navigation }) => {
       setFavorites(userData.favorites || []); // Update favorites state
       setCart(userData.cart || []); // Update cart state
       setOrders(userData.orders || []); // Update orders state
-      setPoints(userData.points || 0); // Cập nhật lại state points
+      //setPoints(userData.points || 0); // Cập nhật lại state points
     } catch (error) {
       Alert.alert('Lỗi', 'Không thể cập nhật thông tin.');
     }
