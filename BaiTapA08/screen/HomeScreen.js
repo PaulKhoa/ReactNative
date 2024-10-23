@@ -64,6 +64,11 @@ const FavoriteStackScreen = () => (
       component={FavoritesScreen}
       options={{ title: 'Yêu Thích' }}
     />
+    <FavoriteStack.Screen
+      name="ProductDetails"
+      component={ProductDetailsScreen}
+      options={{ title: 'Chi Tiết Sản Phẩm' }}
+    />
   </FavoriteStack.Navigator>
 );
 

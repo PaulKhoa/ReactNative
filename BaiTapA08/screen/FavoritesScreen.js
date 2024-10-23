@@ -27,20 +27,39 @@ const FavoritesScreen = ({ navigation }) => {
     }, [navigation]);
 
     useEffect(() => {
-        if (userId) { // Kiểm tra userId có tồn tại
-            const favoritesRef = ref(database, `users/${userId}/favorites`);
-
-            const unsubscribeFavorites = onValue(favoritesRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    setFavorites(snapshot.val());
-                } else {
-                    setFavorites({});
-                }
-            });
-
-            return () => unsubscribeFavorites(); // Dọn dẹp khi component bị hủy
-        }
-    }, [userId]);
+      if (userId) { // Kiểm tra userId có tồn tại
+          const favoritesRef = ref(database, `users/${userId}/favorites`);
+  
+          const unsubscribeFavorites = onValue(favoritesRef, async (snapshot) => {
+              if (snapshot.exists()) {
+                  const favoriteProducts = snapshot.val();
+                  let updatedFavorites = {};
+  
+                  // Lấy thông tin chi tiết của từng sản phẩm yêu thích
+                  for (const key of Object.keys(favoriteProducts)) {
+                      const productId = favoriteProducts[key].id || key;
+  
+                      try {
+                          const productDetails = await fetchProductDetails(productId); // Lấy thông tin từ bảng products
+                          updatedFavorites[key] = {
+                              ...favoriteProducts[key], // name, image, price
+                              ...productDetails // brand, category, description, v.v.
+                          };
+                      } catch (error) {
+                          console.error(`Lỗi khi lấy chi tiết sản phẩm: ${error}`);
+                      }
+                  }
+  
+                  setFavorites(updatedFavorites); // Cập nhật state với thông tin đầy đủ
+              } else {
+                  setFavorites({});
+              }
+          });
+  
+          return () => unsubscribeFavorites(); // Dọn dẹp khi component bị hủy
+      }
+  }, [userId]);
+  
 
     // Lấy 10 sản phẩm bán chạy nhất
     useEffect(() => {
@@ -72,25 +91,33 @@ const FavoritesScreen = ({ navigation }) => {
         }
     };
 
-    const handleProductPress = (productId) => {
-        const productRef = ref(database, `products/${productId}`);
-        
-        onValue(productRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const product = snapshot.val();
-                navigation.navigate('ProductDetails', {
-                    product,
-                    userId,
-                });
-            } else {
-                Alert.alert('Thông báo', 'Sản phẩm không tồn tại.');
-            }
-        });
+    // Hàm lấy thông tin chi tiết của một sản phẩm từ bảng products
+    const fetchProductDetails = async (productId) => {
+      return new Promise((resolve, reject) => {
+          const productRef = ref(database, `products/${productId}`);
+          onValue(productRef, (snapshot) => {
+              if (snapshot.exists()) {
+                  resolve(snapshot.val());
+              } else {
+                  reject('Không tìm thấy sản phẩm');
+              }
+          }, (error) => {
+              reject(error);
+          });
+      });
     };
+
 
     const formatPrice = (price) => {
       if (price === undefined || price === null) return '';
       return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' VNĐ';
+    };
+
+    const handleViewDetails = (product) => {
+      navigation.navigate('ProductDetails', {
+        product,
+        userId, // Gửi userId đến ProductDetailsScreen
+      });
     };
 
     return (
@@ -115,8 +142,13 @@ const FavoritesScreen = ({ navigation }) => {
             ) : (
               Object.keys(favorites).map((key) => {
                 const product = favorites[key];
+                const productId = product.id || key;
                 return (
-                  <View key={key} style={tw`bg-white rounded-lg p-4 mb-4 flex-row items-center shadow`}>
+                  <TouchableOpacity 
+                    key={key} 
+                    style={tw`bg-white rounded-lg p-4 mb-4 flex-row items-center shadow`}
+                    onPress={() => handleViewDetails({ ...product, id: productId })} // Gọi hàm điều hướng khi nhấn vào sản phẩm
+                  >
                     <Image source={{ uri: product.image }} style={tw`w-20 h-20 rounded-lg`} resizeMode="contain" />
                     <View style={tw`flex-1 ml-4`}>
                       <Text style={tw`text-base font-bold`}>{product.name}</Text>
@@ -124,13 +156,14 @@ const FavoritesScreen = ({ navigation }) => {
                     </View>
                     <TouchableOpacity 
                       style={tw`ml-2`}
-                      onPress={() => handleRemoveFavorite(key)}
+                      onPress={() => handleRemoveFavorite(key)} // Giữ chức năng xóa sản phẩm yêu thích
                     >
                       <Icon name="delete" size={30} color="red" />
                     </TouchableOpacity>
-                  </View>
+                  </TouchableOpacity>
                 );
               })
+              
             )}
       
             {/* Đường ngang với chữ "Có lẽ bạn sẽ thích" */}
@@ -143,13 +176,17 @@ const FavoritesScreen = ({ navigation }) => {
             {/* Hiển thị 10 sản phẩm bán chạy nhất trong 2 cột */}
             <View style={tw`flex-row flex-wrap justify-between`}>
               {topProducts.map((product) => (
-                <View key={product.id} style={tw`w-1/2 p-1`}>
+                <TouchableOpacity
+                  key={product.id}
+                  style={tw`w-1/2 p-1`}
+                  onPress={() => handleViewDetails(product)} // Gọi hàm handleViewDetails khi nhấn vào sản phẩm
+                >
                   <View style={tw`bg-white rounded-lg p-2 shadow`}>
                     <Image source={{ uri: product.image }} style={tw`w-full h-32 rounded-lg`} resizeMode="contain" />
                     <Text style={tw`mt-2 text-xs font-bold text-center`}>{product.name}</Text>
                     <Text style={tw`text-lg font-bold text-yellow-600 text-center`}>{formatPrice(product.price)}</Text>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
           </ScrollView>

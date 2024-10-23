@@ -14,9 +14,9 @@ const OrderScreen = () => {
 
   const statuses = [
     { title: 'Tất cả', icon: 'list', filterValue: null },
-    { title: 'Đang xử lý', icon: 'pending', filterValue: 'Đang xử lý' },
-    { title: 'Đã xác nhận', icon: 'check-circle-outline', filterValue: 'Đã xác nhận đơn hàng' },
-    { title: 'Đang chuẩn bị', icon: 'store', filterValue: 'Shop đang chuẩn bị đơn hàng' },
+    { title: 'Xử lý', icon: 'pending', filterValue: 'Đang xử lý' },
+    { title: 'Xác nhận', icon: 'check-circle-outline', filterValue: 'Đã xác nhận đơn hàng' },
+    { title: 'Chuẩn bị', icon: 'store', filterValue: 'Shop đang chuẩn bị đơn hàng' },
     { title: 'Đang giao', icon: 'local-shipping', filterValue: 'Đang giao hàng' },
     { title: 'Đánh giá', icon: 'rate-review', filterValue: 'Đã giao thành công' },
     { title: 'Đã hủy', icon: 'cancel', filterValue: 'Đã hủy' },

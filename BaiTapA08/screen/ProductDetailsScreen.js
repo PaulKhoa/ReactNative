@@ -53,14 +53,12 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         let filteredProducts = [];
         if (allProducts) {
           Object.keys(allProducts).forEach(id => {
-            const currentProduct = allProducts[id];
-            // Kiểm tra xem sản phẩm có cùng brand và category nhưng không phải sản phẩm hiện tại
+            const currentProduct = { id, ...allProducts[id] }; // Thêm id vào sản phẩm nếu nó chưa có
             if (currentProduct.brand === product.brand && currentProduct.category === product.category && currentProduct.id !== product.id) {
               filteredProducts.push(currentProduct);
             }
           });
-        }
-
+        }        
         setSimilarProducts(filteredProducts); // Cập nhật state
       } catch (error) {
         console.error('Lỗi khi lấy sản phẩm tương tự: ', error);
@@ -219,7 +217,11 @@ const ProductDetailsScreen = ({ route, navigation }) => {
           <Text style={tw`text-xl font-bold mb-4 text-gray-800`}>Sản phẩm tương tự</Text>
           <View style={tw`flex-row flex-wrap justify-between`}>
             {similarProducts.map((item) => (
-              <View key={`${item.id}-${item.name}`} style={tw`w-1/2 p-1`}>
+              <TouchableOpacity 
+                key={`${item.id}-${item.name}`} 
+                style={tw`w-1/2 p-1`}
+                onPress={() => navigation.navigate('ProductDetails', { product: item, productId: item.id, userId })} // Thêm productId ở đây
+              >
                 <View style={tw`bg-white rounded-lg p-2 shadow`}>
                   <Image
                     source={{ uri: item.image }}
@@ -229,7 +231,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
                   <Text style={tw`mt-2 text-lg font-bold text-center`}>{item.name}</Text>
                   <Text style={tw`text-lg font-bold text-yellow-600 text-center`}>{formatPrice(item.price)}</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
