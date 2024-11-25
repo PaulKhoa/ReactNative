@@ -1,44 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { auth, signInWithEmailAndPassword, getUserData } from '../firebase';
+import { auth, signInWithEmailAndPassword, getUserData } from '../firebase'; // Đảm bảo bạn đã cấu hình Firebase
 import { useNavigation } from '@react-navigation/native';
-import LoadingScreen from './LoadingScreen'; // Đảm bảo rằng bạn đã tạo và nhập component này
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import LoadingScreen from './LoadingScreen';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false); // Đảm bảo rằng useState được sử dụng đúng
+  const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
+  // Kiểm tra token khi ứng dụng khởi động
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (token) {
+          navigation.navigate('Home'); // Điều hướng đến màn hình chính nếu token tồn tại
+        } else {
+          setLoading(false); // Hiển thị màn hình đăng nhập nếu không có token
+        }
+      } catch (error) {
+        console.error("Lỗi khi kiểm tra token:", error);
+        setLoading(false);
+      }
+    };
+
+    checkToken();
+  }, []);
+
+  // Hàm xử lý đăng nhập
   const handleLogin = () => {
-    setLoading(true); // Hiển thị màn hình loading
+    setLoading(true);
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        const userId = userCredential.user.uid;
-        getUserData(userId)
-          .then((userData) => {
-            if (userData && userData.role === 'Admin') {
-              setTimeout(() => {
-                setLoading(false); // Ẩn màn hình loading
-                navigation.navigate('AdminPage'); // Chuyển đến AdminPage
-              }, 1000); // Thay đổi thời gian nếu cần
-            } else {
-              setTimeout(() => {
-                setLoading(false); // Ẩn màn hình loading
-                navigation.navigate('Home'); // Chuyển đến Home
-              }, 1000); // Thay đổi thời gian nếu cần
-            }
+        const user = userCredential.user;
+
+        // Lấy JWT token từ Firebase
+        user.getIdToken()
+          .then(async (token) => {
+            await AsyncStorage.setItem('userToken', token); // Lưu token vào AsyncStorage
+
+            // Lấy dữ liệu người dùng từ Firebase
+            getUserData(user.uid)
+              .then((userData) => {
+                setLoading(false);
+                if (userData && userData.role === 'Admin') {
+                  navigation.navigate('AdminPage');
+                } else {
+                  navigation.navigate('Home');
+                }
+              })
+              .catch((error) => {
+                console.error('Lỗi lấy dữ liệu người dùng:', error);
+                setLoading(false);
+                Alert.alert('Lỗi', 'Không thể xác định vai trò người dùng.');
+              });
           })
           .catch((error) => {
-            console.error('Lỗi lấy dữ liệu người dùng:', error);
-            setLoading(false); // Ẩn màn hình loading
-            Alert.alert('Lỗi', 'Không thể xác định vai trò người dùng.');
+            console.error('Lỗi lấy token:', error);
+            setLoading(false);
+            Alert.alert('Lỗi', 'Không thể lấy token đăng nhập.');
           });
       })
       .catch(() => {
-        setLoading(false); // Ẩn màn hình loading
+        setLoading(false);
         Alert.alert('Đăng nhập thất bại!', 'Email hoặc mật khẩu không đúng!');
       });
   };
@@ -98,6 +127,7 @@ const LoginScreen = () => {
   );
 };
 
+// Các kiểu cho giao diện
 const styles = StyleSheet.create({
   container: {
     flex: 1,

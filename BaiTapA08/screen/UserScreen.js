@@ -6,7 +6,7 @@ import { auth, signOut, updateUserData, getUserData, database} from '../firebase
 import { sendOTPEmail, generateOTP } from '../otpService';
 import tw from 'tailwind-react-native-classnames';
 import { ref, onValue } from 'firebase/database';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const UserScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -203,16 +203,26 @@ const UserScreen = ({ navigation }) => {
     }
   };
 
-  const handleSignOut = () => {
-    signOut(auth)
-      .then(() => {
-        Alert.alert('Thông báo', 'Đã đăng xuất.');
-        navigation.navigate('Login');
-      })
-      .catch(error => {
-        Alert.alert('Lỗi', 'Không thể đăng xuất.');
+  const handleSignOut = async () => {
+    try {
+      // Đăng xuất khỏi Firebase
+      await signOut(auth);
+  
+      // Xóa token khỏi AsyncStorage
+      await AsyncStorage.removeItem('userToken');
+  
+      Alert.alert('Thông báo', 'Đã đăng xuất.');
+  
+      // Reset ngăn xếp điều hướng về màn hình đăng nhập
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
       });
+    } catch (error) {
+      Alert.alert('Lỗi', 'Không thể đăng xuất.');
+    }
   };
+  
 
   return (
     <ScrollView contentContainerStyle={tw`p-5`}>
